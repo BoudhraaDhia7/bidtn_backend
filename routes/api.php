@@ -1,7 +1,10 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\Authentification\LogoutUserController;
+use App\Http\Controllers\Api\Authentification\RefreshTokenController;
+use App\Http\Controllers\Api\Authentification\RegisterUserController;
+use App\Http\Controllers\Api\Authentification\AuthenticateUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +17,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+//User routes group
+Route::group(['prefix' => 'user'], function () {
+    Route::post('register', RegisterUserController::class)->name('register_user');
+    Route::post('login', AuthenticateUserController::class)->name('login_user');
+    Route::post('refresh-token',RefreshTokenController::class)->name('refresh_user');
+    Route::get('logout', LogoutUserController::class)->name('logout_user');
 });
