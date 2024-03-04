@@ -12,13 +12,11 @@ class RefreshTokenController extends Controller
 {
     use GlobalResponse;
 
-    private $userRepository;
 
     public function __invoke()
     {
-
         try {
-            $response = userRepository::refreshToken();
+            $response = UserRepository::refreshToken();
             return $this->GlobalResponse('user_registred', Response::HTTP_OK, $response);
         } catch (GlobalException $e) {
             return $this->GlobalResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);

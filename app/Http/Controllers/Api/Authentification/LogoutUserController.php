@@ -13,11 +13,10 @@ class LogoutUserController extends Controller
 {
     use GlobalResponse;
      
-    private $userRepository;
     public function __invoke()
     {   
         try {
-            userRepository::logout();
+            UserRepository::logout();
             return $this->GlobalResponse('user_logout', Response::HTTP_OK);
         } catch (GlobalException) {
             return $this->GlobalResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);

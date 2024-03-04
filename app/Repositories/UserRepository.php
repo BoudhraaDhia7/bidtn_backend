@@ -92,7 +92,7 @@ class UserRepository
      * @return Response
      */
     public static function logout()
-    {
+    {   
         try {
             JWTAuth::parseToken()->invalidate();
             return ['message' => 'User logout successfully'];
