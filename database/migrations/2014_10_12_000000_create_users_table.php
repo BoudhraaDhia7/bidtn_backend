@@ -20,8 +20,9 @@ return new class extends Migration
             $table->string('password');
             $table->integer('role_id')->default(2);
             $table->double('balance')->default(0);
-            $table->bigInteger('created_at')->default(time());
-            $table->bigInteger('updated_at')->default(time());
+            $table->unsignedBigInteger('created_at')->default(time());
+            $table->unsignedBigInteger('updated_at')->default(time());
+            $table->unsignedBigInteger('deleted_at')->nullable();
             $table->rememberToken()->nullable();
 
             $table->index('role_id');

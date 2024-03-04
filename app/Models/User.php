@@ -10,6 +10,21 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
+/**
+ * @property string first_name
+ * @property string last_name
+ * @property string email
+ * @property string password
+ * @property string remember_token
+ * @property string email_verified_at
+ * @property string password
+ * @property string access_token
+ * @property string refresh_token
+ * @property int created_at
+ * @property int updated_at
+ * @property int deleted_at
+ */
+
 class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -26,7 +41,7 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    protected $fillable = ['first_name', 'last_name', 'email', 'password'];
+    protected $fillable = ['first_name', 'last_name', 'email', 'password', 'deleted_at'];
 
     /**
      * The attributes that should be hidden for serialization.

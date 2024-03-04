@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Api\Authentification;
 
-use App\Traits\GlobalResponse;
+use App\Traits\SuccessResponse;
+use App\Traits\ErrorResponse;
 use App\Exceptions\GlobalException;
 use App\Http\Controllers\Controller;
 use App\Repositories\UserRepository;
-use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class RefreshTokenController extends Controller
 {
-    use GlobalResponse;
+    use SuccessResponse;
+    use ErrorResponse;
 
     private $userRepository;
 
@@ -20,10 +22,10 @@ class RefreshTokenController extends Controller
         $this->userRepository = new UserRepository();
 
         try {
-            $response = $this->userRepository->refreshToken();
-            return $this->GlobalResponse('Token refreshed successfully', 200, $response);
+            $response = userRepository::refreshToken();
+            return $this->SuccessResponse('messages.user_registred', Response::HTTP_OK, $response);
         } catch (GlobalException $e) {
-            return Response::json(['error' => $e->getMessage()], $e->getCode());
+            return $this->ErrorResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

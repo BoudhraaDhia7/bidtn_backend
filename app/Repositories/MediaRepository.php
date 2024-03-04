@@ -8,7 +8,7 @@ use InvalidArgumentException;
 
 class MediaRepository
 {
-    public function attachMediaToModel($model, array $mediaData)
+    public static function attachMediaToModel($model, array $mediaData)
     {
         if (!$model instanceof Model) {
             throw new InvalidArgumentException("The provided model is not a valid Eloquent model instance.");

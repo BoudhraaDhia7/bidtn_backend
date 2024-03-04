@@ -17,8 +17,9 @@ return new class extends Migration {
             $table->string('file_name')->nullable();
             $table->string('file_type')->nullable();
             $table->string('file_path')->nullable();
-            $table->bigInteger('created_at')->default(time());
-            $table->bigInteger('updated_at')->default(time());
+            $table->unsignedBigInteger('created_at')->default(time());
+            $table->unsignedBigInteger('updated_at')->default(time());
+            $table->unsignedBigInteger('deleted_at')->nullable();
 
             $table->index(['model_type', 'model_id']);
         });

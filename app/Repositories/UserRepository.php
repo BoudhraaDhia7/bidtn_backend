@@ -23,7 +23,7 @@ class UserRepository
     {
         try {
             if (!($token = JWTAuth::attempt($credentials))) {
-                throw new Exception('Authentication failed.', 401);
+                throw new Exception('user_authenticated_failed', 401);
             }
             $refreshToken = $this->generateRefreshToken(auth()->user());
             $user = auth()->user();
@@ -45,16 +45,15 @@ class UserRepository
      * @param array $data
      * @return Response
      */
-    public function register(array $data)
-    {   
-
+    public function register($email, $password, $first_name, $last_name, $optionalParams = [])
+    {
         try {
-            $data['password'] = Hash::make($data['password']);
-            $user = User::create($data);
-            
+            $password = Hash::make($password);
+            $user = User::create($email, $password, $first_name, $last_name);
+
             $token = JWTAuth::fromUser($user);
             $refreshToken = $this->generateRefreshToken($user);
-            
+
             $response = [
                 'access_token' => $token,
                 'refresh_token' => $refreshToken,
@@ -64,11 +63,13 @@ class UserRepository
             ];
 
             $profilePicture = $data['profile_picture'] ?? null;
-            if ($profilePicture) {
-                // initiate the mediaRepository
-                $this->mediaRepository = new MediaRepository();
+
+            if (!empty($optionalParams['profile_picture'])) {
+                $profilePicture = $optionalParams['profile_picture'];
                 $storedPath = $profilePicture->store('profile_pictures', 'public');
                 $fullUrl = Storage::url($storedPath);
+
+                $this->mediaRepository = new MediaRepository();
                 $mediaData = [
                     'file_name' => $user->id . '_profile_picture',
                     'file_path' => $fullUrl,
@@ -82,7 +83,6 @@ class UserRepository
         } catch (JWTException $e) {
             throw new GlobalException($e->getMessage(), '500');
         } catch (\Exception $e) {
-            //dd($e->getMessage());
             throw new GlobalException($e->getMessage(), '500');
         }
     }
@@ -91,7 +91,7 @@ class UserRepository
      * @param array $data
      * @return Response
      */
-    public function logout()
+    public static function logout()
     {
         try {
             JWTAuth::parseToken()->invalidate();
@@ -108,37 +108,37 @@ class UserRepository
      * @return Response
      */
 
-     public function refreshToken()
-     {
-         try {
-             $refreshToken = JWTAuth::getToken();
-             $user = auth()->user();   
-             
-             $payload = JWTAuth::getPayload($refreshToken);
-             if ($payload->get('type') !== 'refresh_token') {
-                 throw new GlobalException('Invalid token type.' , 401);
-             }
- 
-             $newToken = JWTAuth::refresh(false, true);
+    public static function refreshToken()
+    {
+        try {
+            $refreshToken = JWTAuth::getToken();
+            $user = auth()->user();
 
-             return [
-                 'access_token' => $newToken,
-                 'refresh_token' => $refreshToken->get(),
-                 'user'=> $user
-             ];
-            } catch (QueryException $e) {
-                Log::error('Token revoke failed : ' . $e->getMessage());
-                throw new GlobalException('Revoke token failed due to a server error. Please try again later.',500);
-            } catch (GlobalException $e) {
-                throw new GlobalException($e->getMessage(),500);
+            $payload = JWTAuth::getPayload($refreshToken);
+            if ($payload->get('type') !== 'refresh_token') {
+                throw new GlobalException('token_invalid_type', 401);
             }
-     }
+
+            $newToken = JWTAuth::refresh(false, true);
+
+            return [
+                'access_token' => $newToken,
+                'refresh_token' => $refreshToken->get(),
+                'user' => $user,
+            ];
+        } catch (QueryException $e) {
+            Log::error('Token revoke failed : ' . $e->getMessage());
+            throw new GlobalException('token_revoke_failed', 500);
+        } catch (GlobalException $e) {
+            throw new GlobalException($e->getMessage(), 500);
+        }
+    }
 
     /**
      * @param User $user
      * @return string
      */
-    public function generateRefreshToken($user)
+    private function generateRefreshToken($user)
     {
         JWTAuth::factory()->setTTL(10080);
         $customClaims = ['type' => 'refresh_token'];
