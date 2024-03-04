@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Api\Authentification;
 
-use App\Traits\SuccessResponse; 
-use App\Traits\ErrorResponse;
+use App\Traits\GlobalResponse; 
 use App\Exceptions\GlobalException;
 use App\Http\Controllers\Controller;
 use App\Repositories\UserRepository;
@@ -12,8 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RegisterUserController extends Controller
 {
-    use SuccessResponse;
-    use ErrorResponse;
+    use GlobalResponse;
 
     private $userRepository;
 
@@ -30,9 +28,9 @@ class RegisterUserController extends Controller
                 last_name: $validated['last_name'],
                 optionalParams: array_diff_key($validated, array_flip(['email', 'password', 'first_name', 'last_name']))
             );
-            return $this->SuccessResponse('messages.token_refreshed', Response::HTTP_OK, $response);
+            return $this->GlobalResponse('token_refreshed', Response::HTTP_OK, $response);
         } catch (GlobalException) {
-            return $this->ErrorResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

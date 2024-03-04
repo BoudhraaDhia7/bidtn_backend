@@ -2,8 +2,7 @@
 
 namespace App\Http\Controllers\Api\Authentification;
 
-use App\Traits\SuccessResponse;
-use App\Traits\ErrorResponse;
+use App\Traits\GlobalResponse;
 use App\Exceptions\GlobalException;
 use App\Http\Controllers\Controller;
 use App\Repositories\UserRepository;
@@ -13,8 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateUserController extends Controller
 {   
-    use SuccessResponse;
-    use ErrorResponse;
+    use GlobalResponse;
      
     private $userRepository;
     public function __invoke(AuthUserRequest $request)
@@ -24,9 +22,9 @@ class AuthenticateUserController extends Controller
         $this->userRepository = new UserRepository();
         try {
             $response = $this->userRepository->authenticate($request->validated());
-            return $this->SuccessResponse('messages.user_authenticated', Response::HTTP_OK, $response);
+            return $this->GlobalResponse('user_authenticated', Response::HTTP_OK, $response);
         } catch (GlobalException $e) {
-            return $this->ErrorResponse( $e->getMessage() , Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse( $e->getMessage() , Response::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
 }

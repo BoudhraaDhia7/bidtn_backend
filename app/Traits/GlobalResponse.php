@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-trait SuccessResponse
+trait GlobalResponse
 {
     /**
      * @param string $message
@@ -10,17 +10,17 @@ trait SuccessResponse
      * @param $data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function SuccessResponse(string $message,int $status, $data = null)
+    public function GlobalResponse(string $message,int $status, $data = null)
     {
         if ($data){
             return response()->json([
-                'message' => __($message),
+                'message' => __('messages.'.$message),
                 'data' => $data
             ], $status);
         }
 
         return response()->json([
-            'message' => __($message),
+            'message' => __('messages.'.$message),
         ], $status);
 
     }

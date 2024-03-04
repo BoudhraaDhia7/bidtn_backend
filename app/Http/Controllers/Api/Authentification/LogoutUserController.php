@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Api\Authentification;
 
 
-use App\Traits\SuccessResponse;
-use App\Traits\ErrorResponse;
+use App\Traits\GlobalResponse;
 use App\Exceptions\GlobalException;
 use App\Http\Controllers\Controller;
 use App\Repositories\UserRepository;
@@ -12,19 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 
 class LogoutUserController extends Controller
 {
-    use SuccessResponse;
-    use ErrorResponse;
+    use GlobalResponse;
      
     private $userRepository;
     public function __invoke()
     {   
-        // instantiate the UserRepository
-        $this->userRepository = new UserRepository();
         try {
             userRepository::logout();
-            return $this->SuccessResponse('messages.user_logout', Response::HTTP_OK);
+            return $this->GlobalResponse('user_logout', Response::HTTP_OK);
         } catch (GlobalException) {
-            return $this->ErrorResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
 }
