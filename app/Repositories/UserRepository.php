@@ -4,17 +4,19 @@ namespace App\Repositories;
 
 use Exception;
 use App\Models\User;
+use App\Exceptions\AuthException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Exceptions\GlobalException;
-use Illuminate\Support\Facades\Log;
+use App\Exceptions\AddUserException;
 use Illuminate\Support\Facades\Hash;
+use App\Exceptions\AddMediaException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Storage;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
+
 class UserRepository
 {
-    private $mediaRepository;
     /**
      * @param array $data
      * @return Response
@@ -35,9 +37,9 @@ class UserRepository
                 'user' => $user,
             ];
         } catch (JWTException $e) {
-            throw new GlobalException($e->getMessage(), $e->getCode());
+            throw new GlobalException($e->getMessage());
         } catch (\Exception $e) {
-            throw new GlobalException($e->getMessage(), $e->getCode());
+            throw new AuthException($e->getMessage(), $e->getCode());
         }
     }
 
@@ -49,7 +51,12 @@ class UserRepository
     {
         try {
             $password = Hash::make($password);
-            $user = User::create($email, $password, $first_name, $last_name);
+            $user = User::create([
+                'email' => $email,
+                'password' => $password,
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+            ]);
 
             $token = JWTAuth::fromUser($user);
             $refreshToken = $this->generateRefreshToken($user);
@@ -69,21 +76,26 @@ class UserRepository
                 $storedPath = $profilePicture->store('profile_pictures', 'public');
                 $fullUrl = Storage::url($storedPath);
 
-                $this->mediaRepository = new MediaRepository();
                 $mediaData = [
                     'file_name' => $user->id . '_profile_picture',
                     'file_path' => $fullUrl,
                     'file_type' => $profilePicture->getClientMimeType(),
                 ];
-                $this->mediaRepository->attachMediaToModel($user, $mediaData);
+
+                MediaRepository::attachMediaToModel($user, $mediaData);
+
                 $response['user']['profile_picture'] = $fullUrl;
             }
 
             return $response;
-        } catch (JWTException $e) {
-            throw new GlobalException($e->getMessage(), '500');
-        } catch (\Exception $e) {
-            throw new GlobalException($e->getMessage(), '500');
+        } catch (AddMediaException) {
+            throw new AddMediaException();
+        } catch (QueryException) {
+            throw new AddUserException();
+        } catch (JWTException) {
+            throw new GlobalException('token_generation_failed');
+        } catch (\Exception) {
+            throw new GlobalException('internal_server_error');
         }
     }
 
@@ -92,14 +104,14 @@ class UserRepository
      * @return Response
      */
     public static function logout()
-    {   
+    {
         try {
             JWTAuth::parseToken()->invalidate();
             return ['message' => 'User logout successfully'];
         } catch (JWTException $e) {
-            throw new GlobalException($e->getMessage(), $e->getCode());
+            throw new GlobalException($e->getMessage());
         } catch (\Exception $e) {
-            throw new GlobalException($e->getMessage(), $e->getCode());
+            throw new GlobalException($e->getMessage());
         }
     }
 
@@ -109,14 +121,14 @@ class UserRepository
      */
 
     public static function refreshToken()
-    {
+    {   
         try {
             $refreshToken = JWTAuth::getToken();
             $user = auth()->user();
 
             $payload = JWTAuth::getPayload($refreshToken);
             if ($payload->get('type') !== 'refresh_token') {
-                throw new GlobalException('token_invalid_type', 401);
+                throw new AuthException('token_invalid');
             }
 
             $newToken = JWTAuth::refresh(false, true);
@@ -126,11 +138,10 @@ class UserRepository
                 'refresh_token' => $refreshToken->get(),
                 'user' => $user,
             ];
-        } catch (QueryException $e) {
-            Log::error('Token revoke failed : ' . $e->getMessage());
-            throw new GlobalException('token_revoke_failed', 500);
-        } catch (GlobalException $e) {
-            throw new GlobalException($e->getMessage(), 500);
+        } catch (AuthException $e) {
+            throw new AuthException();
+        } catch (JWTException $e) {
+            throw new GlobalException('token_generation_failed');
         }
     }
 

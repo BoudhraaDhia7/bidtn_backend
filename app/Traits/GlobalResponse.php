@@ -10,7 +10,7 @@ trait GlobalResponse
      * @param $data
      * @return \Illuminate\Http\JsonResponse
      */
-    public function GlobalResponse(string $message,int $status, $data = null)
+    public static function GlobalResponse(string $message,int $status = 500, $data = null)
     {
         if ($data){
             return response()->json([

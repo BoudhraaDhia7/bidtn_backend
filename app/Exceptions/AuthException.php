@@ -5,10 +5,10 @@ namespace App\Exceptions;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-class GlobalException extends Exception
+class AuthException extends Exception
 {
    
-    public function __construct($message="internal_server_error", $code = 500, Exception $previous = null)
+    public function __construct($message='token_invalid', $code = 401, Exception $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
