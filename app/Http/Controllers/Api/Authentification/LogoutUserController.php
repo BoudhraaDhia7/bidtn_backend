@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Api\Authentification;
 
 
-use App\Traits\GlobalResponse;
-use App\Exceptions\GlobalException;
-use App\Http\Controllers\Controller;
-use App\Repositories\UserRepository;
-use Symfony\Component\HttpFoundation\Response;
+use Exception;
 use OpenApi\Attributes as OA;
+use App\Traits\GlobalResponse;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use App\Repositories\AuthRepository;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 
 class LogoutUserController extends Controller
@@ -39,12 +41,13 @@ class LogoutUserController extends Controller
         ],
     )]
     
-    public function __invoke()
+    public function __invoke() : JsonResponse
     {   
         try {
-            UserRepository::logout();
+            AuthRepository::logout();
             return $this->GlobalResponse('user_logout', Response::HTTP_OK);
-        } catch (GlobalException) {
+        } catch (Exception $e) {
+            Log::error('LogoutUserController: Error logging out user'. $e->getMessage());
             return $this->GlobalResponse('internal_server_error', Response::HTTP_INTERNAL_SERVER_ERROR);
         } 
     }
