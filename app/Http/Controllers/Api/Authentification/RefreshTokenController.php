@@ -34,11 +34,12 @@ class RefreshTokenController extends Controller
     public function __invoke() : JsonResponse
     {
         try {
-            $response = TokenRepository::refreshAccessToken();
+            $user = auth()->user();
+            $response = TokenRepository::refreshAccessToken($user);
             return $this->GlobalResponse('token_refreshed', Response::HTTP_OK, $response);
         } catch (AuthException $e) {
             Log::error('RefreshTokenController: Error refreshing token, ' . $e->getMessage());
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_UNAUTHORIZED);
+            return $this->GlobalResponse('token_generation_failed', Response::HTTP_UNAUTHORIZED);
         } catch (Exception $e) {
             Log::error('RefreshTokenController: Error refreshing token, ' . $e->getMessage());
             return $this->GlobalResponse('general_error', Response::HTTP_INTERNAL_SERVER_ERROR);

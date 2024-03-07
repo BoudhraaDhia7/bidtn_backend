@@ -71,16 +71,17 @@ class UpdateDetailUserController extends Controller
         ]
     )]
     public function __invoke(UpdateUserDetailRequest $request) : JsonResponse
-    {
+    {   
         $this->userRepository = new UserRepository();
-        
+
         try {
+            $user = auth()->user();
             $validated = $this->getAttributes($request);
-            $response = $this->userRepository->updateUserDetail($validated);
+            $response = $this->userRepository->updateUserDetail($validated, $user);
             return $this->GlobalResponse('user_updated', Response::HTTP_OK, $response);
         } catch (GlobalException $e) {
             Log::error('UpdateUserDetail: Error updating user'.$e->getMessage());
-            return $this->GlobalResponse('user_authenticated_failed', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse('user_provided_invalid', Response::HTTP_INTERNAL_SERVER_ERROR);
         } catch (\Exception $e) {
             Log::error('UpdateUserDetail: Error updating user'. $e->getMessage());
             return $this->GlobalResponse('general_error', Response::HTTP_INTERNAL_SERVER_ERROR);

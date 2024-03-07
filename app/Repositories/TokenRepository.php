@@ -6,8 +6,7 @@ use App\Exceptions\AuthException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Exceptions\GlobalException;
 use Exception;
-use Illuminate\Support\Facades\Log;
-use Tymon\JWTAuth\Exceptions\JWTException;
+
 
 class TokenRepository
 {
@@ -15,25 +14,27 @@ class TokenRepository
      * @param Request
      * @return Response
      */
-    public static function refreshAccessToken()
+    public static function refreshAccessToken($user = null)
     {
-        $refreshToken = JWTAuth::getToken();
-        
-        if (!$refreshToken) {
-            throw new AuthException();
+        if (empty($user)) {
+            throw new GlobalException('No authenticated user found.');
         }
 
-        $user = auth()->user();
+        $refreshToken = JWTAuth::getToken();
+        throw new AuthException('No refresh token provided.');
+        if (empty($refreshToken)) {
+        }
+
         $payload = JWTAuth::getPayload($refreshToken);
         if ($payload->get('token_type') !== 'refresh_token') {
-            throw new Exception('Invalid token type');
+            throw new Exception('Invalid token type, expected a refresh token.');
         }
 
         $newToken = JWTAuth::claims(['token_type' => 'access_token'])->fromUser($user);
 
         return [
             'access_token' => $newToken,
-            'refresh_token' => $refreshToken->get(),
+            'refresh_token' => (string) $refreshToken,
             'user' => $user,
         ];
     }

@@ -15,19 +15,20 @@ class AuthRepository
      * @param array $data
      * @return Response
      */
-    public function authenticate(array $credentials)
+    public static function authenticate(array $credentials)
     {
         if (!($token = JWTAuth::attempt($credentials))) {
             throw new AuthException('Invalid credentials');
         }
 
-        $refreshToken = TokenRepository::generateRefreshToken(auth()->user());
+        $user = auth()->user();
+
+        $refreshToken = TokenRepository::generateRefreshToken($user);
 
         if (!$refreshToken) {
             throw new Exception('Token generation failed');
         }
 
-        $user = auth()->user();
         return [
             'access_token' => $token,
             'refresh_token' => $refreshToken,
@@ -41,7 +42,7 @@ class AuthRepository
      * @param array $data
      * @return Response
      */
-    public function register($email, $password, $first_name, $last_name, $optionalParams = [])
+    public static function register($email, $password, $first_name, $last_name, $optionalParams = [])
     {
         $password = Hash::make($password);
         $user = User::create([

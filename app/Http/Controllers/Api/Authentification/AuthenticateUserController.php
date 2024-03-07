@@ -55,10 +55,10 @@ class AuthenticateUserController extends Controller
     )]
     public function __invoke(AuthUserRequest $request) : JsonResponse
     {
-        // instantiate the authRepository
-        $this->authRepository = new AuthRepository();
+        
         try {
-            $response = $this->authRepository->authenticate($request->validated());
+            $validated = $this->getAttributes($request);
+            $response = AuthRepository::authenticate($validated);
             return $this->GlobalResponse('user_authenticated', Response::HTTP_OK, $response);
         }catch (AuthException $e){
             Log::error('AuthenticateUserController: Error authenticating user, ' . $e->getMessage());
@@ -67,5 +67,10 @@ class AuthenticateUserController extends Controller
             Log::error('AuthenticateUserController: Error authenticating user, ' . $e->getMessage());
             return $this->GlobalResponse('general_error' ,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private function getAttributes(AuthUserRequest $request): array
+    {
+        return $request->validated();
     }
 }

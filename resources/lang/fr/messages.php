@@ -13,6 +13,7 @@ return [
     'user_deleted' => 'Utilisateur supprimé avec succès',
     'user_update_failed' => 'Echec de mise à jour des détails de l\'utilisateur',
     'user_password_reset' => 'Votre mot de passe a été réinitialisé avec succès',
+    'user_provided_invalid' => 'L\'utilisateur fourni n\'est pas un utilisateur valide',
 
 
     //Token

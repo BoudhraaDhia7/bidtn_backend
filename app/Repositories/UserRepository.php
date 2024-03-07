@@ -37,11 +37,10 @@ class UserRepository
      * @param array $data
      * @return User
      */
-    public function updateUserDetail($validated)
+    public function updateUserDetail($validated, $user = null)
     {
-        $user = auth()->user();
-        if (!$user) {
-            throw new GlobalException('No authenticated user found');
+        if (empty($user)) {
+            throw new GlobalException('No authenticated user found.');
         }
 
         $attributesToUpdate = ['first_name', 'last_name'];
@@ -111,7 +110,7 @@ class UserRepository
         $passwordResetToken->token = $token;
         $passwordResetToken->save();
 
-        //Mail::to($email)->send(new UserResetPasswordMail($token, $email));
+        Mail::to($email)->send(new UserResetPasswordMail($token, $email));
 
         return [
             'success' => true,
