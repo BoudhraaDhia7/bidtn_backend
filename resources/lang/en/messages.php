@@ -35,6 +35,19 @@ return [
     'set_password_subject' => 'Set your password',
     'email_sended' => 'Email sended successfully',
 
+
+    //Jeton Pack
+    'jeton_pack_purchased' => 'Jeton pack purchased successfully',
+    'purchase_error' => 'Error buying jeton pack',
+    'jeton_pack_not_found' => 'Jeton pack not found',
+    'jeton_pack_creation_failed' => 'Jeton pack creation failed',
+    'jeton_pack_deleting_failed' => 'Jeton pack deleting failed',
+    'jeton_pack_update_failed' => 'Jeton pack update failed',
+    'jeton_pack_not_provided' => 'Jeton pack not provided',
+    'jeton_pack_invalid' => 'Invalid jeton pack',
+    'jeton_pack_not_enough' => 'Not enough jeton pack',
+    'jeton_pack_not_enough_balance' => 'Not enough balance',
+    'jeton_pack_not_enough_amount' => 'Not enough amount',
     //Invalid
     'invalid_link' => 'invalid or expired link',
     

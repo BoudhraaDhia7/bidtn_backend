@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
@@ -102,6 +103,22 @@ class User extends Authenticatable implements JWTSubject
     public function hasMedia(): bool
     {
         return $this->media()->exists();
+    }
+
+    /*
+    *Check if the the user in admin
+    */
+    public function isAdmin(): bool
+    {
+        return $this->role->id === 1;
+    }
+
+    /**
+     * User realtion with jeton transaction
+     */
+    public function jetonTransactions() : HasMany
+    {
+        return $this->hasMany(JetonTransaction::class);
     }
 
     /**
