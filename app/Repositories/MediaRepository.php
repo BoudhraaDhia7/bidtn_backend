@@ -4,30 +4,28 @@ namespace App\Repositories;
 
 use App\Models\Media;
 use InvalidArgumentException;
-use Symfony\Component\Finder\Glob;
-use App\Exceptions\GlobalException;
-use App\Exceptions\AddMediaException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\QueryException;
+use Exception;
+
 
 class MediaRepository
 {
     public static function attachMediaToModel($model, array $mediaData)
     {
-        if (!$model instanceof Model) {
-            throw new InvalidArgumentException('The provided model is not a valid Eloquent model instance.');
-        }
-        try {
-            $mediaData['model_type'] = get_class($model);
-            $mediaData['model_id'] = $model->getKey();
+        $mediaData['model_type'] = $model::class;
+        $mediaData['model_id'] = $model->getKey();
 
-            $media = Media::create($mediaData);
+        $media = Media::firstOrNew(
+            ['model_type' => $mediaData['model_type'], 'model_id' => $mediaData['model_id']]
+        );
 
-            return $media;
-        } catch (\Exception) {
-            throw new GlobalException();
-        } catch (QueryException) {
-            throw new AddMediaException();
+        $media->fill($mediaData);
+        
+        if ($media->isDirty()) {
+            $media->save();
         }
+
+        return $media;
     }
+
 }

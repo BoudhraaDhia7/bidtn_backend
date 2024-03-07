@@ -20,6 +20,25 @@ class Role extends Model
     protected $fillable = ['role_name'];
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = time();
+            $model->updated_at = time();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = time();
+        });
+    }
+
+    /**
      * Get the role for the blog user.
      */
 

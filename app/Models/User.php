@@ -41,7 +41,7 @@ class User extends Authenticatable implements JWTSubject
      *
      * @var array<int, string>
      */
-    protected $fillable = ['first_name', 'last_name', 'email', 'password', 'deleted_at'];
+    protected $fillable = ['first_name', 'last_name', 'email', 'password', 'created_at', 'updated_at', 'deleted_at'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -60,6 +60,25 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = time();
+            $model->updated_at = time();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = time();
+        });
+    }
+
+    /**
      * Get the role that owns the user.
      */
     public function role(): BelongsTo
@@ -73,6 +92,16 @@ class User extends Authenticatable implements JWTSubject
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'model');
+    }
+
+    /**
+     * Check if the user has any associated media.
+     *
+     * @return bool
+     */
+    public function hasMedia(): bool
+    {
+        return $this->media()->exists();
     }
 
     /**

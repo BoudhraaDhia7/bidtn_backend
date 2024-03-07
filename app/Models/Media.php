@@ -17,18 +17,36 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Media extends Model
 {
     use HasFactory;
-    
+
     public $timestamps = false;
 
     protected $table = 'medias';
 
+    protected $fillable = ['model_type', 'model_id', 'file_name', 'file_path', 'file_type', 'created_at', 'updated_at', 'deleted_at'];
 
-    protected $fillable = ['model_type', 'model_id', 'file_name', 'file_path', 'file_type'];
+    /**
+     * The "booting" method of the model.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_at = time();
+            $model->updated_at = time();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_at = time();
+        });
+    }
 
     /**
      * Get the owning model.
      */
-    public function model() : MorphTo
+    public function model(): MorphTo
     {
         return $this->morphTo();
     }

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\Authentification;
 
 use OpenApi\Attributes as OA;
 use App\Traits\GlobalResponse;
-use App\Exceptions\GlobalException;
-use App\Exceptions\AddUserException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Repositories\UserRepository;
+use App\Repositories\AuthRepository;
 use App\Http\Requests\RegisterUserRequest;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -15,7 +15,7 @@ class RegisterUserController extends Controller
 {
     use GlobalResponse;
 
-    private $userRepository;
+    private $authRepository;
     /**
      * Register a new user.
      *
@@ -70,20 +70,22 @@ class RegisterUserController extends Controller
             )
         ]
     )]
-    public function __invoke(RegisterUserRequest $request)
+    public function __invoke(RegisterUserRequest $request) : JsonResponse
     {
         // instantiate the UserRepository
-        $this->userRepository = new UserRepository();
+        $this->authRepository = new AuthRepository();
         try {
-            $validated = $request->validated();
-            $response = $this->userRepository->register(email: $validated['email'], password: $validated['password'], first_name: $validated['first_name'], last_name: $validated['last_name'], optionalParams: array_diff_key($validated, array_flip(['email', 'password', 'first_name', 'last_name'])));
+            $validated = $this->getAttributes($request);
+            $response = $this->authRepository->register(email: $validated['email'], password: $validated['password'], first_name: $validated['first_name'], last_name: $validated['last_name'], optionalParams: array_diff_key($validated, array_flip(['email', 'password', 'first_name', 'last_name'])));
             return $this->GlobalResponse('user_registred', Response::HTTP_OK, $response);
-        } catch (GlobalException $e) {
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
-        } catch (AddUserException $e) {
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch (\Exception $e) {
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }  catch (\Exception $e) {
+            Log::error('RegisterUserController: Error registering user'. $e->getMessage());
+            return $this->GlobalResponse('general_error', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private function getAttributes(RegisterUserRequest $request): array
+    {
+        return $request->validated();
     }
 }

@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers\Api\Authentification;
 
+use Exception;
 use OpenApi\Attributes as OA;
 use App\Traits\GlobalResponse;
 use App\Exceptions\AuthException;
-use App\Exceptions\GlobalException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Repositories\UserRepository;
+use App\Repositories\AuthRepository;
 use App\Http\Requests\AuthUserRequest;
 use Symfony\Component\HttpFoundation\Response;
 
-#[OA\Info(title: "Laravel API", version: "1.0.0", description: "This is a simple API for a user authentication")]
+#[OA\Info(title: "BID-TN API", version: "1.0.0", description: "This is BID-TN api documentation")]
 class AuthenticateUserController extends Controller
 {   
     use GlobalResponse;
 
-    private $userRepository;
+    private $authRepository;
 
     /**
      * Authenticate a user.
@@ -51,17 +53,24 @@ class AuthenticateUserController extends Controller
             new OA\Response(response: Response::HTTP_INTERNAL_SERVER_ERROR, description: "Server Error")
         ]
     )]
-    public function __invoke(AuthUserRequest $request)
+    public function __invoke(AuthUserRequest $request) : JsonResponse
     {
-        // instantiate the UserRepository
-        $this->userRepository = new UserRepository();
+        
         try {
-            $response = $this->userRepository->authenticate($request->validated());
+            $validated = $this->getAttributes($request);
+            $response = AuthRepository::authenticate($validated);
             return $this->GlobalResponse('user_authenticated', Response::HTTP_OK, $response);
         }catch (AuthException $e){
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_UNAUTHORIZED);
-        } catch (GlobalException $e) {
-            return $this->GlobalResponse($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+            Log::error('AuthenticateUserController: Error authenticating user, ' . $e->getMessage());
+            return $this->GlobalResponse('user_authenticated_failed', Response::HTTP_UNAUTHORIZED);
+        } catch (Exception $e) {
+            Log::error('AuthenticateUserController: Error authenticating user, ' . $e->getMessage());
+            return $this->GlobalResponse('general_error' ,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private function getAttributes(AuthUserRequest $request): array
+    {
+        return $request->validated();
     }
 }
