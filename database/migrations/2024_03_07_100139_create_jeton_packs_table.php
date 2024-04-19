@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->double('price');
             $table->integer('amount');
+            $table->string('description');
             $table->unsignedBigInteger('created_at')->default(time());
             $table->unsignedBigInteger('updated_at')->default(time());
             $table->unsignedBigInteger('deleted_at')->nullable();

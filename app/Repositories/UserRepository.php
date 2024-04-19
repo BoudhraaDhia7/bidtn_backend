@@ -71,7 +71,7 @@ class UserRepository
     }
 
     protected function updateUserProfilePicture($user, $profilePicture)
-    {
+    {   
         $storedPath = $profilePicture->store('profile_pictures', 'public');
         $fullUrl = Storage::url($storedPath);
 
@@ -161,7 +161,6 @@ class UserRepository
 
     public static function buyJetonPack($packId, $user = null)
     {   
-
         if (!$user) {
             throw new GlobalException('No authenticated user found');
         }
@@ -181,8 +180,6 @@ class UserRepository
         $transaction->save();
 
         return [
-            'success' => true,
-            'message' => 'Jeton pack bought successfully.',
             'user' => $user,
         ];
     }

@@ -59,9 +59,9 @@ class BuyJetonPackController extends Controller
     {   
         try {
             $user = auth()->user();  
-            $packId = $this->getAttributes($request)['pack_id'];
-            UserRepository::buyJetonPack($packId, $user);         
-            return $this->GlobalResponse('jeton_pack_purchased', Response::HTTP_OK);
+            $packId = $this->getAttributes($request)['packId'];
+            $response = UserRepository::buyJetonPack($packId, $user);         
+            return $this->GlobalResponse('jeton_pack_purchased', Response::HTTP_OK , $response);
         } catch (GlobalException $e) {
             Log::error('BuyJetonPackController: Error buying jeton pack: ' . $e->getMessage());
             return $this->GlobalResponse('purchase_error', Response::HTTP_UNAUTHORIZED);

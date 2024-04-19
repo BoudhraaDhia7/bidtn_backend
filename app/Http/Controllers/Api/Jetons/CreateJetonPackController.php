@@ -70,16 +70,11 @@ class CreateJetonPackController extends Controller
     {
         try {
             $validated = $this->getAttributes($request);
-            $jetonPack = JetonRepository::createJetonPack($validated);
-            return response()->json([
-                'message' => 'Jeton pack created successfully.',
-                'data' => $jetonPack,
-            ], Response::HTTP_CREATED);
+            $response = JetonRepository::createJetonPack($validated);
+            return $this->GlobalResponse('jeton_pack_created', Response::HTTP_OK, $response);
         } catch (\Exception $e) {
             Log::error('CreateJetonPackController: Error creating jeton pack'. $e->getMessage());
-            return response()->json([
-                'message' => 'An error occurred while creating the jeton pack.',
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse('general_error' ,Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

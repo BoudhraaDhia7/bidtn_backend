@@ -5,12 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class JetonPack extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'price', 'amount', 'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['name','Description','price', 'amount', 'created_at', 'updated_at', 'deleted_at'];
 
     public $timestamps = false;
 
@@ -34,5 +35,13 @@ class JetonPack extends Model
     public function transactions() : HasMany
     {
         return $this->hasMany(JetonTransaction::class, 'jeton_pack_id');
+    }
+
+    /*
+    * Define the relation with the media table
+    **/
+    public function media(): MorphMany
+    {
+        return $this->morphMany(Media::class, 'model');
     }
 }

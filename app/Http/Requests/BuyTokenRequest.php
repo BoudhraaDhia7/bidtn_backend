@@ -24,7 +24,7 @@ class BuyTokenRequest extends FormRequest
     public function rules()
     {
         return [
-            'pack_id' => ['required', 'integer'],
+            'packId' => ['required', 'integer'],
         ];
     }
 }

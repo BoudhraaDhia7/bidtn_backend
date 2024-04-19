@@ -13,5 +13,10 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UsersTableSeeder::class);
         $this->call(RolesTableSeeder::class);
+        $this->call(CategoryTableSeeder::class);
+        $this->call(ProductsTableSeeder::class);
+        //$this->call(AuctionTableSeeder::class);
+        $this->call(JetonTableSeeder::class);
+        $this->call(ProductsTagsTableSeeder::class);
     }
 }
