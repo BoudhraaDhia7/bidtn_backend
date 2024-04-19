@@ -24,9 +24,17 @@ class JetonRepository
 
     public static function getJetonPacks(): array
     {
-        $jetonPacks = JetonPack::all();
+        $jetonPacks = JetonPack::with('media')->get();
+    
+        // Check if there are any JetonPacks found
+        if ($jetonPacks->isEmpty()) {
+            throw new Exception('No jeton pack found', 404);
+        }
+    
+        // Return the JetonPacks as an array, including their filtered media
         return $jetonPacks->toArray();
     }
+    
 
     public static function getJetonPack($id): array
     {
