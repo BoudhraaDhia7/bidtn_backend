@@ -44,6 +44,7 @@ class AuthRepository
      */
     public static function register($email, $password, $first_name, $last_name, $optionalParams = [])
     {
+
         $password = Hash::make($password);
         $user = User::create([
             'email' => $email,
@@ -61,6 +62,7 @@ class AuthRepository
         if (!$token) {
             throw new Exception('Token generation failed');
         }
+
         $refreshToken = TokenRepository::generateRefreshToken($user);
 
         if (!$refreshToken) {
@@ -75,18 +77,16 @@ class AuthRepository
             'user' => $user,
         ];
 
-        $profilePicture = $data['profile_picture'] ?? null;
-
         if (!empty($optionalParams['profile_picture'])) {
             $profilePicture = $optionalParams['profile_picture'];
             $storedPath = $profilePicture->store('profile_pictures', 'public');
             $fullUrl = Storage::url($storedPath);
-
             $mediaData = [
                 'file_name' => $user->id . '_profile_picture',
                 'file_path' => $fullUrl,
                 'file_type' => $profilePicture->getClientMimeType(),
             ];
+
 
             MediaRepository::attachMediaToModel($user, $mediaData);
 

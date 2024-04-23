@@ -5,7 +5,9 @@ namespace App\Repositories;
 use Exception;
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\JetonPack;
 use Illuminate\Support\Str;
+use App\Models\JetonTransaction;
 use App\Models\PasswordResetToken;
 use App\Exceptions\GlobalException;
 use App\Mail\UserResetPasswordMail;
@@ -69,7 +71,7 @@ class UserRepository
     }
 
     protected function updateUserProfilePicture($user, $profilePicture)
-    {
+    {   
         $storedPath = $profilePicture->store('profile_pictures', 'public');
         $fullUrl = Storage::url($storedPath);
 
@@ -126,16 +128,14 @@ class UserRepository
      */
     public static function resetPassword($validated, $resetPasswordToken)
     {
-        $token = PasswordResetToken::where('token', $resetPasswordToken)
-            ->whereNull('deleted_at') 
-            ->first();
-        
-        $tokenExpirationTime = $token->created_at + (30 * 60);
-        if (!$token || Carbon::now()->timestamp > $tokenExpirationTime ) {
+        $token = PasswordResetToken::where('token', $resetPasswordToken)->whereNull('deleted_at')->first();
+
+        $tokenExpirationTime = $token->created_at + 30 * 60;
+        if (!$token || Carbon::now()->timestamp > $tokenExpirationTime) {
             throw new GlobalException('Invalid or expired token');
         }
 
-        $user = User::where('email',$token->email)->first();
+        $user = User::where('email', $token->email)->first();
 
         if (!$user) {
             throw new GlobalException('No authenticated user found');
@@ -150,6 +150,37 @@ class UserRepository
         return [
             'success' => true,
             'message' => 'Password reset successfully.',
+        ];
+    }
+
+    /*
+     * Methode to buy jetons pack
+     * @param array $validated
+     * @return array
+     */
+
+    public static function buyJetonPack($packId, $user = null)
+    {   
+        if (!$user) {
+            throw new GlobalException('No authenticated user found');
+        }
+        $jetonPack = JetonPack::where('id', $packId)->first();
+
+        if (!$jetonPack) {
+            throw new GlobalException('Jeton pack not found');
+        }
+
+        $user->balance += $jetonPack->amount;
+        $user->save();
+
+        $transaction = new JetonTransaction();
+        $transaction->user_id = $user->id;
+        $transaction->jeton_pack_id = $jetonPack->id;
+        $transaction->amount = $jetonPack->amount;
+        $transaction->save();
+
+        return [
+            'user' => $user,
         ];
     }
 

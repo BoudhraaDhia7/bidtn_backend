@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
@@ -95,6 +96,13 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
+     * Get the auctions for the user.
+     */
+    public function auctions(): HasMany
+    {
+        return $this->hasMany(Auction::class);
+    }
+    /**
      * Check if the user has any associated media.
      *
      * @return bool
@@ -102,6 +110,22 @@ class User extends Authenticatable implements JWTSubject
     public function hasMedia(): bool
     {
         return $this->media()->exists();
+    }
+
+    /*
+     *Check if the the user in admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role->id === 1;
+    }
+
+    /**
+     * User realtion with jeton transaction
+     */
+    public function jetonTransactions(): HasMany
+    {
+        return $this->hasMany(JetonTransaction::class);
     }
 
     /**
@@ -117,6 +141,13 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
-        return [];
+        return [
+            'user' => [
+                'first_name' => $this->first_name,
+                'last_name' => $this->last_name,
+                'email' => $this->email,
+                'balance' => $this->balance 
+            ]
+        ];
     }
 }

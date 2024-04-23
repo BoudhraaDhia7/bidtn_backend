@@ -35,6 +35,20 @@ return [
     'set_password_subject' => 'Définissez votre mot de passe',
     'email_sended' => 'Email envoyé avec succès',
     
+    //Jeton Pack
+    'jeton_pack_purchased' => 'Pack jeton acheté avec succès',
+    'purchase_error' => 'Erreur d\'achat de pack jeton',
+    'jeton_pack_not_found' => 'Pack jeton non trouvé',
+    'jeton_pack_creation_failed' => 'Echec de création de pack jeton',
+    'jeton_pack_deleting_failed' => 'Echec de suppression de pack jeton',
+    'jeton_pack_update_failed' => 'Echec de mise à jour de pack jeton',
+    'jeton_pack_not_provided' => 'Pack jeton non fourni',
+    'jeton_pack_invalid' => 'Pack jeton invalide',
+    'jeton_pack_not_enough' => 'Pas assez de pack jeton',
+    'jeton_pack_not_enough_balance' => 'Solde insuffisant',
+    'jeton_pack_not_enough_amount' => 'Montant insuffisant',
+
+    
     //Link
     'invalid_link' => 'lien invalide ou expireé',
 

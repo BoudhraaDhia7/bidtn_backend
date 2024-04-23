@@ -18,8 +18,6 @@ class AuthenticateUserController extends Controller
 {   
     use GlobalResponse;
 
-    private $authRepository;
-
     /**
      * Authenticate a user.
      *
