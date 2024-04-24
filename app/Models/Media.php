@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes; // Import SoftDeletes
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -12,17 +13,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @property string file_name
  * @property string file_path
  * @property string file_type
+ * @property \Illuminate\Support\Carbon|null deleted_at
  */
-
 class Media extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     public $timestamps = false;
 
     protected $table = 'medias';
 
     protected $fillable = ['model_type', 'model_id', 'file_name', 'file_path', 'file_type', 'created_at', 'updated_at', 'deleted_at'];
+
+    protected $dates = ['deleted_at'];
 
     /**
      * The "booting" method of the model.

@@ -8,4 +8,13 @@ return [
         'DEFAULT_DIRECTION' => 'ASC',
         'DEFAULT_PAGINATION' => 1,
     ],
+    'MEDIA' => [
+        'IMAGE' => [
+            'MAX_SIZE' => 2048,
+            'MIMES' => 'jpeg,png,jpg,gif,svg',
+            'PATH' => 'public',
+            'DISK' => 'public',
+        ],
+    ],
+    'MEDIA_PATH' => env('APP_URL'),
 ];

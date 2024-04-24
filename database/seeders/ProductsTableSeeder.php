@@ -15,14 +15,19 @@ class ProductsTableSeeder extends Seeder
     public function run()
     {
         // Clear existing records
-        for ($i = 1; $i <= 15; $i++) {
-            DB::table('products')->insert([
-                [
-                    'name' => 'Item' . $i,
-                    'description' => 'description' . $i,
-                    'user_id' => 30,
-                ],
-            ]);
-        }
+        // for ($i = 1; $i <= 15; $i++) {
+        //     DB::table('products')->insert([
+        //         [
+        //             'name' => 'Item' . $i,
+        //             'description' => 'description' . $i,
+        //             'user_id' => 30,
+        //         ],
+        //     ]);
+        // }
+        DB::table('products')->insert([
+            'name'=>'test',
+            'description' => 'description' ,
+            'user_id' => 1,        
+        ]);
     }
 }

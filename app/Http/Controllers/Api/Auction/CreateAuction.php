@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
+use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Traits\GlobalResponse;
@@ -22,15 +23,15 @@ class CreateAuction
     
     public function __invoke(StoreAuctionRequest $request)
     {
-        $validated = $this->getAttributes($request);
-        $user = auth()->user();
-        $auction = AuctionRepository::createAuction($validated , $user);
+     
         try {
-          
+            $validated = $this->getAttributes($request);
+            $user = auth()->user();
+            $auction = AuctionRepository::createAuction($validated , $user);
             return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
-            return $this->GlobalResponse('general_error', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
     }
 

@@ -2,13 +2,20 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\GlobalException;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class AuctionRepository
-{
+{   
+    /**
+     * Get all auctions from the database.
+     *
+     * @param QueryConfig $queryConfig
+     * @return LengthAwarePaginator|Collection
+     */
     public static function index(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
         $auctionQuery = Auction::query();
@@ -20,7 +27,7 @@ class AuctionRepository
         } else {
             $auctions = $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection())->get();
         }
-
+        
         return $auctions;
     }
 
@@ -33,9 +40,6 @@ class AuctionRepository
      */
     public static function createAuction($validated, $user): array
     {
-        if (!$user) {
-            throw new \Exception('User not found');
-        }
 
         $attributesToSet = ['title', 'description', 'starting_price', 'start_date', 'end_date'];
 
@@ -44,7 +48,7 @@ class AuctionRepository
         $auction = Auction::create($filteredAttributes);
 
         if (!$auction) {
-            throw new \Exception('Auction creation failed');
+            throw new GlobalException('auction_creation_failed');
         }
 
         return $auction->toArray();

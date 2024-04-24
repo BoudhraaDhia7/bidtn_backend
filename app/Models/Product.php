@@ -10,13 +10,13 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * @property int $ItemID
+ * @property int $ProductID
  * @property int $AuctionID
  * @property string     $Status
  * @property bool $IsConfirmed
  * @property string $name
  * @property string $description
- * @property string $category
+ * @property string $categories
  * @property int $user_id
  */
 class Product extends Model
@@ -58,6 +58,10 @@ class Product extends Model
 
         static::updating(function ($model) {
             $model->updated_at = time();
+        });
+
+        static::deleting(function ($model) {
+            $model->categories()->detach();
         });
     }
 

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateItemRequest extends FormRequest
+class DeleteProductRequest extends FormRequest
 {   
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +22,7 @@ class CreateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'description' => 'required|string',
-            'category' => 'required|string',
-            'images' => 'required|file|mimes:jpeg,png,jpg,gif,svg',
+            'id' => 'required|numeric|exists:products,id',
         ];
     }
 }

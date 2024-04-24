@@ -1,32 +1,32 @@
 <?php
 
-namespace App\Http\Controllers\Api\Jetons;
+namespace App\Http\Controllers\Api\Categories;
 
 use App\Helpers\ResponseHelper;
+use App\Traits\GlobalResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Repositories\JetonRepository;
-use Symfony\Component\HttpFoundation\Response;
-use App\Traits\GlobalResponse;
 
-class ListJetonPackController extends Controller
+use App\Repositories\CategoryRepository;
+use Symfony\Component\HttpFoundation\Response;
+
+class GetCategoriesController extends Controller
 {
     use GlobalResponse;
 
     /**
-     * Get all jeton packs from the database.
+     * Get all categories from the database.
      * @return JsonResponse
      */
     public function __invoke(): JsonResponse
-    {   
+    {
         try {
-            $response = JetonRepository::getJetonPacks();
-            return $this->GlobalResponse('jeton_pack_retrived', Response::HTTP_OK, $response);
+            $response = CategoryRepository::index();
+            return $this->GlobalResponse('category_retrived', Response::HTTP_OK, $response);
         } catch (\Exception $e) {
-            Log::error('ListJetonPackController: Error listing jeton pack'. $e->getMessage());
+            Log::error('GetCategoriesController: Error registering user' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
     }
-
 }

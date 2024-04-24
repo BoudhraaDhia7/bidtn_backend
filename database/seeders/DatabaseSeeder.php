@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         //$this->call(AuctionTableSeeder::class);
         $this->call(JetonTableSeeder::class);
         $this->call(ProductsTagsTableSeeder::class);
+        $this->call(MediaTableSeeder::class);
     }
 }
