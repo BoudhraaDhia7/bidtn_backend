@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Api\Auction;
+namespace App\Http\Controllers\Api\Product;
 
+use App\Helpers\AuthHelper;
 use App\Helpers\QueryConfig;
 use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
@@ -9,27 +10,27 @@ use Illuminate\Http\Response;
 use App\Traits\GlobalResponse;
 use App\Traits\PaginationParams;
 use Illuminate\Http\JsonResponse;
-use App\Repositories\AuctionRepository;
+use App\Repositories\ProductRepository;
 
-class GetAuctionsController
+class GetProductsController
 {
     use GlobalResponse;
     use PaginationParams;
 
-    /**
-     * Get all auctions from the database.
-        * @param Request $request
-        * @return JsonResponse
-            
+    /* Get a list of products from the database.
+     * @param Request $request
+     * @return JsonResponse
      */
     public function __invoke(Request $request): JsonResponse
-    {
+    {    
+          
         try {
+            $user = AuthHelper::currentUser();
             $params = $this->getAttributes($request);
-            $auctions = AuctionRepository::index($params);
-            return $this->GlobalResponse('auctions_retrieved', Response::HTTP_OK, $auctions, $params->getPaginated());
+            $products = ProductRepository::GetProducts($params, $user);    
+            return $this->GlobalResponse('products_retrieved', Response::HTTP_OK, $products , true);
         } catch (\Exception $e) {
-            \Log::error('GetLiveAuctionController: Error retrieving auctions' . $e->getMessage());
+            \Log::error('GetProductsController: Error retrieving products' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
     }
@@ -43,7 +44,10 @@ class GetAuctionsController
         $paginationParams = $this->getPaginationParams($request);
 
         $filters = [
-            'keyword' => $request->input('keyword') ?? null,
+            'name' => $request->input('name'),
+            'category' => $request->input('category'),
+            'status' => $request->input('status'),
+            'is_confirmed' => $request->input('is_confirmed'),
         ];
 
         $search = new QueryConfig();

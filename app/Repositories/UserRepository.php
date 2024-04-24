@@ -70,6 +70,13 @@ class UserRepository
         ];
     }
 
+    /**
+     * Update a user profile picture.
+     *
+     * @param User $user
+     * @param UploadedFile $profilePicture
+     * @return string
+     */
     protected function updateUserProfilePicture($user, $profilePicture)
     {   
         $storedPath = $profilePicture->store('profile_pictures', 'public');

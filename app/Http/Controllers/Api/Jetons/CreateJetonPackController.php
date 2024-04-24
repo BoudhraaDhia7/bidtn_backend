@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Jetons;
 
+use App\Helpers\ResponseHelper;
 use OpenApi\Attributes as OA;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -74,7 +75,7 @@ class CreateJetonPackController extends Controller
             return $this->GlobalResponse('jeton_pack_created', Response::HTTP_OK, $response);
         } catch (\Exception $e) {
             Log::error('CreateJetonPackController: Error creating jeton pack'. $e->getMessage());
-            return $this->GlobalResponse('general_error' ,Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
     }
 

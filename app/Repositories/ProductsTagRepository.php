@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Item;
+use App\Models\Product;
 use App\Helpers\QueryConfig;
 use App\Models\ProductsTag;
 use Tymon\JWTAuth\Claims\Collection;
@@ -12,11 +12,11 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class ProductsTagRepository
 {   
     /**
-     * Create item.
+     * Create Product.
      *
      * @param int $id
      * @param array $data
-     * @return Item
+     * @return Product
      */
     public static function createTag($name , Array $imageArray)
     {   
@@ -50,7 +50,7 @@ class ProductsTagRepository
     }
 
     /**
-     * Update a item.
+     * Update a Product.
      *
      * @param int $id
      * @param array $data
@@ -58,15 +58,15 @@ class ProductsTagRepository
      */
     public static function getAll(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $itemQuery = ProductsTag::with('media');
+        $productTagsQuery = ProductsTag::with('media');
     
-        ProductsTag::applyFilters($queryConfig->getFilters(), $itemQuery);
-        $itemQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+        ProductsTag::applyFilters($queryConfig->getFilters(), $productTagsQuery);
+        $productTagsQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
     
         if ($queryConfig->isPaginated()) {
-            return $itemQuery->paginate($queryConfig->getPerPage());
+            return $productTagsQuery->paginate($queryConfig->getPerPage());
         }
-        return $itemQuery->get();
+        return $productTagsQuery->get();
     }
 
 }

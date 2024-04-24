@@ -2,158 +2,152 @@
 
 namespace App\Repositories;
 
+use App\Exceptions\GlobalException;
 use App\Models\Product;
 use App\Helpers\QueryConfig;
+use App\Helpers\MediaHelpers;
 use Tymon\JWTAuth\Claims\Collection;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ProductRepository
-{   
+{
     /**
-     * Create item.
+     * Create Product.
      *
      * @param int $id
      * @param array $data
      * @return Product
      */
-    public static function createProduct($name, $category , $description , Array $imageArray)
-    {   
-        $user = auth()->user();
-        if(!$user){
-            throw new \Exception('User not found');
+    public static function storeProduct($name, $description, array $categoriesArray, array $imageArray, $user) : array
+    {
+        if (empty($imageArray)) {
+            throw new GlobalException('product_image_required' , 400);
         }
-        if(empty($imageArray)){
-            throw new \Exception('Image is required');
+
+        if (empty($categoriesArray)) {
+            throw new GlobalException('product_category_required' , 400);
         }
 
         $product = Product::create([
             'name' => $name,
-            'category' => $category,
             'description' => $description,
-            'images' => $imageArray,
             'user_id' => $user->id,
         ]);
 
+        $product->categories()->attach($categoriesArray);
+
         if (!$product) {
-            throw new \Exception('User registration failed');
+            throw new GlobalException('user_registration_failed' , 400);
         }
 
         $response['product'] = $product;
-
-        foreach($imageArray as $image){
-            $storedPath = $image->store('profile_pictures', 'public');
-            $fullUrl = Storage::url($storedPath);
-
-            $mediaData = [
-                'file_name' => $product->id . '_item_picture',
-                'file_path' => $fullUrl,
-                'file_type' => $image->getClientMimeType(),
-            ];
-
+        foreach ($imageArray as $image) {
+            $mediaData = MediaHelpers::storeMedia($image, 'product_images', $product);
             MediaRepository::attachMediaToModel($product, $mediaData);
             $response['images'][] = $mediaData;
         }
         return $response;
     }
 
- 
-    
-    public static function GetProducts(QueryConfig $queryConfig, $userId): LengthAwarePaginator|Collection
+    /**
+     * Get all products.
+     *
+     * @param QueryConfig $queryConfig
+     * @param $user
+     * @return LengthAwarePaginator|Collection
+     */
+    public static function GetProducts(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {   
-        if(!$userId){
-            throw new \Exception('User not found');
-        }
-    
         $productQuery = Product::with(['media', 'categories.media']);
-    
+
         Product::applyFilters($queryConfig->getFilters(), $productQuery);
-        //$productQuery->where('user_id', $userId)->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+        if (!$user->isAdmin) {
+            $productQuery->where('user_id', $user->id);
+        }
         $productQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
-    
+
         if ($queryConfig->isPaginated()) {
             return $productQuery->paginate($queryConfig->getPerPage());
         }
         return $productQuery->get();
     }
-    
 
- //TODO - Implement the following methods
- 
-    // public function delete($id)
-    // {
-    //     $product = Item::find($id);
-    //     if ($item) {
-    //         return $item->delete();
-    //     }
-    //     return null;
-    // }
+    /**
+     * Get a product.
+     *
+     * @param int $id
+     * @param $user
+     * @return Product
+     */
+    public static function GetProduct($id, $user)
+    {
+       
+        $product = Product::with(['media', 'categories.media'])->find($id);
+        if (!$product) {
+            throw new GlobalException('product_not_found',404);
+        }
+        if (!$user->isAdmin && $product->user_id !== $user->id) {
+            throw new GlobalException('product_unauthorized_view' ,  401);
+        }
+        return [$product];
+    }
 
-    //    /**
-    //  * Update a item.
-    //  *
-    //  * @param int $id
-    //  * @param array $data
-    //  * @return Item
-    //  */
-    // public static function updateItem($id, $name, $category, $description, array $newImageArray)
-    // {
-    //     $item = Item::find($id);
+    /**
+     * Delete a product.
+     *
+     * @param int $id
+     * @param $user
+     * @return bool
+     */
+    public static function deleteProduct($id, $user)
+    {
+        $product = Product::find($id);
 
-    //     if (!$item) {
-    //         throw new \Exception('Item not found');
-    //     }
-    //     if ($item->user_id !== auth()->user()->id) {
-    //         throw new \Exception('User is not authorized to update this item');
-    //     }
+        if (!$product) {
+            throw new GlobalException('product_not_found' , 302);
+        }
 
-    //     $item->update([
-    //         'name' => $name,
-    //         'category' => $category,
-    //         'description' => $description,
-    //     ]);
+        if ($product->user_id !== auth()->user()->id && !$user->isAdmin) {
+            throw new GlobalException('product_unauthorized' , 401);
+        }
 
-    //     $response['item'] = $item;
+        if (!$product->delete()) {
+            throw new GlobalException('product_deleted_failed' , 500);
+        }
 
-    //     if (!empty($newImageArray)) {
-    //         foreach ($newImageArray as $image) {
-    //             $storedPath = $image->store('item_images', 'public');
-    //             $fullUrl = Storage::url($storedPath);
+        return true;
+    }
 
-    //             $mediaData = [
-    //                 'file_name' => $item->id . '_item_picture',
-    //                 'file_path' => $fullUrl,
-    //                 'file_type' => $image->getClientMimeType(),
-    //             ];
+    /**
+     * Update a product.
+     *
+     * @param int $id
+     * @param array $data
+     * @return Product
+     */
+    public static function updateProduct($id, $name, $category, $description, array $newImageArray, array $deletedImages, $user)
+    {   
+        $product = Product::find($id);
 
-    //             MediaRepository::attachMediaToModel($item, $mediaData);
-    //             $response['images'][] = $mediaData;
-    //         }
-    //     } else {
-    //         throw new \Exception('At least one image is required');
-    //     }
+        if (!$product) {
+            throw new GlobalException('product_not_found', 404);
+        }
 
-    //     return $response;
-    // }
+        if ($product->user_id !== auth()->user()->id && !$user->isAdmin) {
+            throw new GlobalException('product_unauthorized' , 401);
+        }
 
-    //  /**
-    //  * Find item by id.
-    //  *
-    //  * @param int $id
-    //  * @return Item
-    //  */
-    // public static function findById($id)
-    // {
-    //     $item = Item::find($id);
+        $product->update([
+            'name' => $name,
+            'category' => $category,
+            'description' => $description,
+        ]);
 
-    //     if (!$item) {
-    //         throw new \Exception('Item not found');
-    //     }
+        MediaRepository::detachMediaFromModel($product, $product->id, $deletedImages);
+        foreach ($newImageArray as $image) {
+            $mediaData = MediaHelpers::storeMedia($image, 'product_images', $product);
+            MediaRepository::attachMediaToModel($product, $mediaData);
+        }
 
-    //     if ($item->user_id !== auth()->user()->id) {
-    //         throw new \Exception('User is not authorized to view this item');
-    //     }
-
-    //     return $item;
-    // }
+    }
 }

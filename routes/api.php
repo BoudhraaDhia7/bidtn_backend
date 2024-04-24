@@ -1,21 +1,32 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\Auction\CreateAuction;
+
+use App\Http\Controllers\Api\Authentification\LogoutUserController;
+use App\Http\Controllers\Api\Authentification\RegisterUserController;
+use App\Http\Controllers\Api\Authentification\RefreshTokenController;
+use App\Http\Controllers\Api\Authentification\AuthenticateUserController;
+
 use App\Http\Controllers\Api\User\GetUserController;
 use App\Http\Controllers\Api\User\DeleteUserController;
-use App\Http\Controllers\Api\Items\GetProductsController;
 use App\Http\Controllers\Api\User\BuyJetonPackController;
 use App\Http\Controllers\Api\User\ResetPasswordController;
 use App\Http\Controllers\Api\User\ForgotPasswordController;
-use App\Http\Controllers\Api\Jetons\ListJetonPackController;
-use App\Http\Controllers\Api\Items\CreateProductController;
-use App\Http\Controllers\Api\Auction\GetAuctionsController;
 use App\Http\Controllers\Api\User\UpdateDetailUserController;
+
+use App\Http\Controllers\Api\Product\GetProductController;
+use App\Http\Controllers\Api\Product\GetProductsController;
+use App\Http\Controllers\Api\Product\CreateProductController;
+use App\Http\Controllers\Api\Product\DeleteProductController;
+use App\Http\Controllers\Api\Product\UpdateProductController;
+
+use App\Http\Controllers\Api\Jetons\ListJetonPackController;
 use App\Http\Controllers\Api\Jetons\CreateJetonPackController;
-use App\Http\Controllers\Api\Authentification\LogoutUserController;
-use App\Http\Controllers\Api\Authentification\RefreshTokenController;
-use App\Http\Controllers\Api\Authentification\RegisterUserController;
-use App\Http\Controllers\Api\Authentification\AuthenticateUserController;
+
+use App\Http\Controllers\Api\Auction\CreateAuction;
+use App\Http\Controllers\Api\Auction\GetAuctionsController;
+
+use App\Http\Controllers\Api\Categories\GetCategoriesController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -37,10 +48,10 @@ Route::group(['prefix' => 'auth'], function () {
 
 //User Crud route group protected by auth middleware
 Route::group(['prefix' => 'users', 'middleware' => 'user.auth'], function () {
-    Route::get('get-auth-user', GetUserController::class)->name('get_auth_user');
-    Route::delete('{id}', DeleteUserController::class)->name('delete_user');
-    Route::put('update-detail',UpdateDetailUserController::class)->name('update_user');
+    Route::get('    get-auth-user', GetUserController::class)->name('get_auth_user');
     Route::post('buy-jeton-pack', BuyJetonPackController::class)->name('buy_jetons');
+    Route::put('update-detail',UpdateDetailUserController::class)->name('update_user');
+    Route::delete('{id}', DeleteUserController::class)->name('delete_user');
 
     /*Route::get('/', 'GetAllUsersController')->name('get_all_users');*/
 });
@@ -57,22 +68,27 @@ Route::group(['prefix' => 'password'], function () {
 });
 
 //Jetons routes
-Route::group(['prefix' => 'jetons', 'middleware' => ['user.auth', 'user.admin']], function () {
+Route::group(['prefix' => 'jetons', 'middleware' => ['user.auth']], function () {
     Route::get('/', ListJetonPackController::class)->name('get_all_jetons');
     Route::post('create', CreateJetonPackController::class)->name('create_jetons_pack');
 });
 
-//Item routes
+//Product routes
 Route::group(['prefix' => 'products', 'middleware' => ['user.auth']], function () {
-    Route::get('', GetProductsController::class)->name('get_all_items');
-    Route::post('create', CreateProductController::class)->name('create_item');
-    //Route::put('{id}', 'UpdateItemController')->name('update_item');
-    //Route::delete('{id}', 'DeleteItemController')->name('delete_item');
-});
+    Route::post('', CreateProductController::class)->name('create_product');
+    Route::get('{id}', GetProductController::class)->name('get_product');
+    Route::get('', GetProductsController::class)->name('get_all_products');
+    Route::delete('{id}',DeleteProductController::class)->name('delete_product');
+    Route::post('{id}',UpdateProductController::class)->name('update_product');
+});   
 
 Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () {
     Route::get('/', GetAuctionsController::class)->name('get_all_auctions');
     Route::post('create', CreateAuction::class)->name('create_auction');
     //Route::delete('{id}', 'DeleteAuctionController')->name('delete_auction');
     //Route::put('{id}', 'UpdateAuctionController')->name('update_auction');
+});
+
+Route::group(['prefix' => 'categories'] , function(){
+    Route::get('/',GetCategoriesController::class)->name('get_all_Categories');
 });

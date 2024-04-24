@@ -1,12 +1,19 @@
 <?php
 namespace App\Repositories;
 
-use Exception;
+use App\Exceptions\GlobalException;
 use App\Models\JetonPack;
 
 
 class JetonRepository
-{
+{   
+    /**
+     * Create a new jeton pack record in the database.
+     *
+     * @param array $validated Validated data from the request
+     * @return array
+     * @throws Exception if the jeton pack creation fails
+     */
     public static function createJetonPack($validated): array
     {   
         $attributesToUpdate = ['name', 'price', 'amount'];
@@ -16,40 +23,55 @@ class JetonRepository
         $jetonPack = JetonPack::create($filteredAttributes);
     
         if (!$jetonPack) {
-            throw new Exception('Jeton pack creation failed');
+            throw new GlobalException('jeton_pack_creation_failed');
         }
     
         return $jetonPack->toArray();
     }
 
+    /**
+     * Get all jeton packs from the database.
+     * @return array
+     */
     public static function getJetonPacks(): array
     {
         $jetonPacks = JetonPack::with('media')->get();
-    
-        // Check if there are any JetonPacks found
+        
         if ($jetonPacks->isEmpty()) {
-            throw new Exception('No jeton pack found', 404);
+            throw new GlobalException('jeton_pack_not_found', 404);
         }
     
-        // Return the JetonPacks as an array, including their filtered media
         return $jetonPacks->toArray();
     }
     
 
+    /**
+     * Get a jeton pack from the database.
+     * @param int $id
+     * @return array
+     */
     public static function getJetonPack($id): array
     {
         $jetonPack = JetonPack::find($id);
         if (!$jetonPack) {
-            throw new Exception('Jeton pack not found', 404);
+            throw new GlobalException('jeton_pack_not_found', 404);
         }
         return $jetonPack->toArray();
     }
 
+    /**
+     * Update a jeton pack record in the database.
+     *
+     * @param int $id
+     * @param array $validated Validated data from the request
+     * @return array
+     * @throws Exception if the jeton pack update fails
+     */
     public static function updateJetonPack($id, $validated): array
     {
         $jetonPack = JetonPack::find($id);
         if (!$jetonPack) {
-            throw new Exception('Jeton pack not found', 404);
+            throw new GlobalException('jeton_pack_not_found', 404);
         }
         $attributesToUpdate = ['name', 'price', 'amount'];
         foreach ($attributesToUpdate as $attribute) {
@@ -60,7 +82,4 @@ class JetonRepository
         $jetonPack->save();
         return $jetonPack->toArray();
     }
-
-    
-    
 }
