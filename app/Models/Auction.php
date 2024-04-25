@@ -25,6 +25,7 @@ class Auction extends Model
         'description',
         'starting_price',
         'is_finished',
+        'starting_user_number',
         'is_confirmed',
         'user_id',
         'start_date',
@@ -49,7 +50,7 @@ class Auction extends Model
     
     public function Product(): HasOne
     {
-        return $this->hasOne(Product::class, 'AuctionID');
+        return $this->hasOne(Product::class, 'auction_id');
     }
 
     public function media(): MorphMany
@@ -59,11 +60,30 @@ class Auction extends Model
 
     //relationship with user
     //TODO -  Add miore fillter
-
     public function scopeFilterByKeyword($query, $keyword)
     {
         if ($keyword !== null) {
-            $query->where('ProductName', 'like', '%' . $keyword . '%');
+            $query->where(function ($subQuery) use ($keyword) {
+                $subQuery->where('title', 'like', '%' . $keyword . '%')
+                         ->orWhere('description', 'like', '%' . $keyword . '%')
+                         ->orWhere('starting_price', 'like', '%' . $keyword . '%')
+                         ->orWhere('is_finished', 'like', '%' . $keyword . '%')
+                         ->orWhere('starting_user_number', 'like', '%' . $keyword . '%')
+                         ->orWhereHas('product.categories', function ($query) use ($keyword) {
+                             $query->where('name', 'like', '%' . $keyword . '%');
+                         });
+            });
+        }
+        return $query;
+    }
+    
+
+    public function scopeFilterByCategory($query, $category)
+    {
+        if ($category !== null) {
+            $query->whereHas('product.categories', function ($query) use ($category) {
+                $query->whereIn('name', $category);
+            });
         }
         return $query;
     }

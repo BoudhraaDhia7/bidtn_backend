@@ -31,8 +31,8 @@ class AuthenticateUserController extends Controller
      * @return \Symfony\Component\HttpFoundation\Response
      */
 
-    #[OA\Post(
-        path: "/api/user/login",
+     #[OA\Post(
+        path: "/api/auth/login",
         tags: ["Auth"],
         description: "Authenticate a user",
         requestBody: new OA\RequestBody(
@@ -46,14 +46,48 @@ class AuthenticateUserController extends Controller
             )
         ),
         responses: [
-            new OA\Response(response: Response::HTTP_OK, description: "Authenticated successfully"),
+            new OA\Response(
+                response: Response::HTTP_OK,
+                description: "Authenticated successfully",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(property: "message", type: "string", description: "Success message"), 
+                            new OA\Property(property: "data  ", type: "object", description: "Response data", 
+                                properties: [
+                                    new OA\Property(property: "token", type: "string", description: "Authentication token"),
+                                    new OA\Property(property: "data", type: "object", description: "User details",
+                                        properties: [
+                                            new OA\Property(property: "token_type", type: "string", description: "Token type"),
+                                            new OA\Property(property: "expires_in", type: "integer", description: "Token expiration time"),
+                                            new OA\Property(property: "user", type: "object", description: "User details",
+                                                properties: [
+                                                    new OA\Property(property: "id", type: "integer", description: "User ID"),
+                                                    new OA\Property(property: "name", type: "string", description: "User name"),
+                                                    new OA\Property(property: "email", type: "string", description: "User email"),
+                                                    new OA\Property(property: "role_id", type: "integer", description: "User role"),
+                                                    new OA\Property(property: "balance", type: "integer", description: "User role"),
+                                                    new OA\Property(property: "created_at", type: "integer", description: "User creation date"),
+                                                    new OA\Property(property: "updated_at", type: "integer", description: "User update date"),
+                                                    new OA\Property(property: "deleted_at", type: "integer", description: "User update date"),
+                                                ]),
+                                        ]),
+                                    
+                                ]
+                            )
+                        ]
+                    )
+                )
+            
+            ),
             new OA\Response(response: Response::HTTP_UNAUTHORIZED, description: "Unauthorized"),
             new OA\Response(response: Response::HTTP_INTERNAL_SERVER_ERROR, description: "Server Error")
         ]
-    )]
+    )]    
     public function __invoke(AuthUserRequest $request) : JsonResponse
     {
-        
         try {
             $validated = $this->getAttributes($request);
             $response = AuthRepository::authenticate($validated);

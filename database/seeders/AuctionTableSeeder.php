@@ -1,6 +1,8 @@
 <?php
 namespace Database\Seeders;
 
+use App\Models\Auction;
+use App\Models\Product;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -14,33 +16,17 @@ class AuctionTableSeeder extends Seeder
      */
     public function run()
     {
-       // Example data array
-       $auctions = [
-        [
-            'title' => 'Vintage Art Piece',
-            'description' => 'A rare vintage painting from the 19th century.',
-            'starting_price' => 5000,
-            'is_finished' => false,
-            'is_confirmed' => true,
-            'user_id' => 1, 
-            'start_date' => time(),
-            'end_date' => time(),
-        ],
-        [
-            'title' => 'Antique Vase',
-            'description' => 'An exquisite antique vase from Asia.',
-            'starting_price' => 1500,
-            'is_finished' => false,
-            'is_confirmed' => true,
-            'user_id' => 1, 
-            'start_date' => time(),
-            'end_date' => time(),
-        ],
-    ];
+        $user_id = 1;
 
-    foreach ($auctions as $auction) {
-        DB::table('auctions')->insert($auction);
-    }
-}
+        for ($i = 1; $i <= 10; $i++) {
+            Auction::create([
+                'title' => "Auction Title $i",
+                'description' => "Description for Auction $i",
+                'starting_price' => rand(100, 500),
+                'user_id' => $user_id,
+                'end_date' => time() + 86400 * 30,
+            ]);
+        }
+    
     }
 }

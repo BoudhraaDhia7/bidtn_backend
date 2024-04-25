@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Auction;
+use App\Models\Product;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -14,20 +16,18 @@ class ProductsTableSeeder extends Seeder
      */
     public function run()
     {
-        // Clear existing records
-        // for ($i = 1; $i <= 15; $i++) {
-        //     DB::table('products')->insert([
-        //         [
-        //             'name' => 'Item' . $i,
-        //             'description' => 'description' . $i,
-        //             'user_id' => 30,
-        //         ],
-        //     ]);
-        // }
-        DB::table('products')->insert([
-            'name'=>'test',
-            'description' => 'description' ,
-            'user_id' => 1,        
-        ]);
+        $user_id = 1; // Assuming all products belong to user with ID 1
+        $auctions = Auction::all();
+
+        foreach ($auctions as $auction) {
+            for ($i = 1; $i <= 1; $i++) {
+                Product::create([
+                    'name' => "Product $i for Auction {$auction->id}",
+                    'description' => "Description of Product $i in Auction {$auction->id}",
+                    'user_id' => $user_id,
+                    'auction_id' => $auction->id
+                ]);
+            }
+        }
     }
 }

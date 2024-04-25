@@ -29,45 +29,60 @@ class RegisterUserController extends Controller
      */
 
      #[OA\Post(
-        path: "/api/user/register",
+        path: "/api/auth/register",
         tags: ["Auth"],
-        summary: "Register New User",
-        operationId: "registerUser",
+        description: "Register a new user",
         requestBody: new OA\RequestBody(
-        description: "User registration details with profile picture",
-        required: true,
-        content: new OA\MediaType(
-            mediaType: "multipart/form-data",
-            schema: new OA\Schema(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["first_name","last_name",  "email", "password"],
                 properties: [
-                    new OA\Property(property: "email", type: "string", description: "User email address."),
-                    new OA\Property(property: "password", type: "string", description: "User password."),
-                    new OA\Property(property: "first_name", type: "string", description: "User's first name."),
-                    new OA\Property(property: "last_name", type: "string", description: "User's last name."),
-                    new OA\Property(property: "profile_picture", type: "string", format: "binary", description: "Profile picture file."),
-                ],
-                required: ["email", "password", "first_name", "last_name"]
+                    new OA\Property(property: "first_name", type: "string", example: "John"),
+                    new OA\Property(property: "last_name", type: "string", example: "Doe"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "john.doe@test.com"),
+                    new OA\Property(property: "password", type: "string", format: "password", example: "strongpassword"),
+                ]
             )
         ),
-    ),
         responses: [
             new OA\Response(
-                response: Response::HTTP_OK,
-                description: "User registered successfully. Authentication token refreshed.",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "token", type: "string", description: "The new authentication token."),
-                    ]
+                response: Response::HTTP_CREATED,
+                description: "User registered successfully",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(property: "message", type: "string", description: "Success message"),
+                            new OA\Property(property: "data", type: "object", description: "Response data",
+                                properties: [
+                                    new OA\Property(property: "token", type: "string", description: "Authentication token"),
+                                    new OA\Property(property: "data", type: "object", description: "User details",
+                                        properties: [
+                                            new OA\Property(property: "token_type", type: "string", description: "Token type"),
+                                            new OA\Property(property: "expires_in", type: "integer", description: "Token expiration time"),
+                                            new OA\Property(property: "user", type: "object", description: "User details",
+                                                properties: [
+                                                    new OA\Property(property: "id", type: "integer", description: "User ID"),
+                                                    new OA\Property(property: "name", type: "string", description: "User name"),
+                                                    new OA\Property(property: "email", type: "string", description: "User email"),
+                                                    new OA\Property(property: "role_id", type: "integer", description: "User role"),
+                                                    new OA\Property(property: "balance", type: "integer", description: "User balance"),
+                                                    new OA\Property(property: "created_at", type: "string", description: "User creation date"),
+                                                    new OA\Property(property: "updated_at", type: "string", description: "User update date"),
+                                                    new OA\Property(property: "deleted_at", type: "string", nullable: true, description: "User deletion date if applicable")
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                ]
+                            )
+                        ]
+                    )
                 )
             ),
-            new OA\Response(
-                response: Response::HTTP_UNPROCESSABLE_ENTITY,
-                description: "Unprocessable Entity. Issues with user registration details."
-            ),
-            new OA\Response(
-                response: Response::HTTP_INTERNAL_SERVER_ERROR,
-                description: "Internal server error or other unspecified error."
-            )
+            new OA\Response(response: Response::HTTP_BAD_REQUEST, description: "Invalid Request Data"),
+            new OA\Response(response: Response::HTTP_INTERNAL_SERVER_ERROR, description: "Server Error")
         ]
     )]
     public function __invoke(RegisterUserRequest $request) : JsonResponse

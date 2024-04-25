@@ -18,11 +18,12 @@ return new class extends Migration
             $table->string('title');
             $table->string('description');
             $table->integer('starting_price');
+            $table->unsignedBigInteger('user_id');
             $table->boolean('is_finished')->default(false);
             $table->boolean('is_confirmed')->default(false);
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('start_date')->default(time());
+            $table->integer('starting_user_number')->default(7);
             $table->unsignedBigInteger('end_date')->default(time());
+            $table->unsignedBigInteger('start_date')->default(time());
             $table->unsignedBigInteger('created_at')->default(time());
             $table->unsignedBigInteger('updated_at')->default(time());
             $table->index(['user_id']);

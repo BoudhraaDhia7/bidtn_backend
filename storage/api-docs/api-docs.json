@@ -6,14 +6,244 @@
         "version": "1.0.0"
     },
     "paths": {
-        "/api/user/login": {
+        "/api/auctions": {
+            "get": {
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "List auctions",
+                "description": "Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.",
+                "operationId": "73e7f2fe709a89731ba169b17c668a21",
+                "parameters": [
+                    {
+                        "name": "filters",
+                        "in": "query",
+                        "description": "JSON string of filter conditions for fetching auctions, such as status or date ranges.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Field to order the auctions by",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Direction of the sort order (asc or desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of auctions per page (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Auctions retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "An array of auctions",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "The unique identifier for the auction",
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "description": "Title of the auction",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the auction",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input, unable to process request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating what was wrong with the input",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Invalid parameters"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "Create a new auction",
+                "description": "Creates a new auction with specified details. Requires user authentication and returns the created auction's data.",
+                "operationId": "b06f884274085950eb954beb00ee6856",
+                "requestBody": {
+                    "description": "Auction details required to create a new auction",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "starting_price",
+                                    "start_date",
+                                    "end_date",
+                                    "starting_user_number"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title of the auction",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Detailed description of the auction",
+                                        "type": "string"
+                                    },
+                                    "starting_price": {
+                                        "description": "Starting price of the auction",
+                                        "type": "number",
+                                        "format": "double"
+                                    },
+                                    "start_date": {
+                                        "description": "The start date and time of the auction",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "end_date": {
+                                        "description": "The end date and time of the auction",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "starting_user_number": {
+                                        "description": "The minimum number of users required for the auction to start",
+                                        "type": "integer"
+                                    },
+                                    "is_confirmed": {
+                                        "description": "Status to confirm if the auction is officially active",
+                                        "type": "boolean",
+                                        "default": false
+                                    },
+                                    "is_finished": {
+                                        "description": "Status to indicate if the auction has finished",
+                                        "type": "boolean",
+                                        "default": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Auction created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "title": {
+                                            "description": "Title of the auction",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "title": "Vintage Camera Auction",
+                                        "description": "Auctioning a collection of vintage cameras from the 1950s.",
+                                        "starting_price": 100,
+                                        "start_date": "2023-01-01T12:00:00Z",
+                                        "end_date": "2023-01-05T12:00:00Z",
+                                        "starting_user_number": 5,
+                                        "is_confirmed": true,
+                                        "is_finished": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating the reason for the failure of auction creation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "auction_creation_failed"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Authenticate a user.\n\nThis endpoint is responsible for authenticating a user based on the provided email and password.\nIt performs validation on the request data and, if successful, returns an authentication token\nalong with user details. This process can result in various responses depending on the outcome\nof the authentication attempt.",
                 "description": "Authenticate a user",
-                "operationId": "d21de429f5c27fa6153a09b34c19995f",
+                "operationId": "c7529c5a85f790a81d6552835a340929",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -42,7 +272,82 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Authenticated successfully"
+                        "description": "Authenticated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Success message",
+                                            "type": "string"
+                                        },
+                                        "data  ": {
+                                            "description": "Response data",
+                                            "properties": {
+                                                "token": {
+                                                    "description": "Authentication token",
+                                                    "type": "string"
+                                                },
+                                                "data": {
+                                                    "description": "User details",
+                                                    "properties": {
+                                                        "token_type": {
+                                                            "description": "Token type",
+                                                            "type": "string"
+                                                        },
+                                                        "expires_in": {
+                                                            "description": "Token expiration time",
+                                                            "type": "integer"
+                                                        },
+                                                        "user": {
+                                                            "description": "User details",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "description": "User ID",
+                                                                    "type": "integer"
+                                                                },
+                                                                "name": {
+                                                                    "description": "User name",
+                                                                    "type": "string"
+                                                                },
+                                                                "email": {
+                                                                    "description": "User email",
+                                                                    "type": "string"
+                                                                },
+                                                                "role_id": {
+                                                                    "description": "User role",
+                                                                    "type": "integer"
+                                                                },
+                                                                "balance": {
+                                                                    "description": "User role",
+                                                                    "type": "integer"
+                                                                },
+                                                                "created_at": {
+                                                                    "description": "User creation date",
+                                                                    "type": "integer"
+                                                                },
+                                                                "updated_at": {
+                                                                    "description": "User update date",
+                                                                    "type": "integer"
+                                                                },
+                                                                "deleted_at": {
+                                                                    "description": "User update date",
+                                                                    "type": "integer"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "401": {
                         "description": "Unauthorized"
@@ -53,25 +358,81 @@
                 }
             }
         },
-        "/api/user/logout": {
+        "/api/auth/logout": {
             "get": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Invoke method for handling user logout.",
-                "description": "Logout a user. This endpoint requires a Bearer token in the Authorization header.",
-                "operationId": "620cdb0f7986cd9461006945a7f8efc8",
+                "summary": "Log out a user",
+                "description": "Logs out the current user by invalidating the authentication token. This endpoint requires an authenticated user with an active session.",
+                "operationId": "106b60602c45973aa801c3118d7cfde9",
                 "responses": {
                     "200": {
-                        "description": "User logged out successfully"
+                        "description": "User logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Confirmation message that the user has been logged out.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "message": "User logged out successfully"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if the token is invalid or expired",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message explaining the nature of the authentication error.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Invalid token or token expired"
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Server Error"
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message explaining the nature of the server error.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Unable to process request due to server error"
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         },
-        "/api/user/refresh-token": {
+        "/api/token/refresh-token": {
             "post": {
                 "tags": [
                     "Auth"
@@ -136,47 +497,309 @@
                 ]
             }
         },
-        "/api/user/register": {
+        "/api/auth/register": {
             "post": {
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Register New User",
-                "description": "Register a new user.\n\nThis endpoint is responsible for registering a new user based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new user account and returns an\nauthentication token along with user details. This process can result in various responses depending on the\noutcome of the registration attempt.",
-                "operationId": "registerUser",
+                "summary": "Register a new user.\n\nThis endpoint is responsible for registering a new user based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new user account and returns an\nauthentication token along with user details. This process can result in various responses depending on the\noutcome of the registration attempt.",
+                "description": "Register a new user",
+                "operationId": "ab63ff66bce160aac75c7ef7e6093c92",
                 "requestBody": {
-                    "description": "User registration details with profile picture",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.doe@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "strongpassword"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "description": "Success message",
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "description": "Response data",
+                                            "properties": {
+                                                "token": {
+                                                    "description": "Authentication token",
+                                                    "type": "string"
+                                                },
+                                                "data": {
+                                                    "description": "User details",
+                                                    "properties": {
+                                                        "token_type": {
+                                                            "description": "Token type",
+                                                            "type": "string"
+                                                        },
+                                                        "expires_in": {
+                                                            "description": "Token expiration time",
+                                                            "type": "integer"
+                                                        },
+                                                        "user": {
+                                                            "description": "User details",
+                                                            "properties": {
+                                                                "id": {
+                                                                    "description": "User ID",
+                                                                    "type": "integer"
+                                                                },
+                                                                "name": {
+                                                                    "description": "User name",
+                                                                    "type": "string"
+                                                                },
+                                                                "email": {
+                                                                    "description": "User email",
+                                                                    "type": "string"
+                                                                },
+                                                                "role_id": {
+                                                                    "description": "User role",
+                                                                    "type": "integer"
+                                                                },
+                                                                "balance": {
+                                                                    "description": "User balance",
+                                                                    "type": "integer"
+                                                                },
+                                                                "created_at": {
+                                                                    "description": "User creation date",
+                                                                    "type": "string"
+                                                                },
+                                                                "updated_at": {
+                                                                    "description": "User update date",
+                                                                    "type": "string"
+                                                                },
+                                                                "deleted_at": {
+                                                                    "description": "User deletion date if applicable",
+                                                                    "type": "string",
+                                                                    "nullable": true
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid Request Data"
+                    },
+                    "500": {
+                        "description": "Server Error"
+                    }
+                }
+            }
+        },
+        "/api/categories": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Get all categories",
+                "description": "Retrieves a list of all categories available in the system. This endpoint does not require any parameters and is accessible without authentication.",
+                "operationId": "de147f1de7f0590db6a8f2e2f07a3af3",
+                "responses": {
+                    "200": {
+                        "description": "List of all categories retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "description": "The unique identifier for the category",
+                                                "type": "integer"
+                                            },
+                                            "name": {
+                                                "description": "The name of the category",
+                                                "type": "string"
+                                            },
+                                            "description": {
+                                                "description": "A brief description of the category",
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "example": [
+                                        {
+                                            "id": 1,
+                                            "name": "Electronics",
+                                            "description": "Devices, gadgets, and electronics"
+                                        },
+                                        {
+                                            "id": 2,
+                                            "name": "Apparel",
+                                            "description": "Clothing and accessories for all genders and ages"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/jeton-packs": {
+            "post": {
+                "tags": [
+                    "Jetons"
+                ],
+                "summary": "Create a new jeton pack",
+                "description": "Create a new jeton pack.\n\nThis endpoint is responsible for creating a new jeton pack based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new jeton pack and returns a response\nindicating the success of the operation. This process can result in various responses depending on the outcome\nof the jeton pack creation attempt.",
+                "operationId": "createJetonPack",
+                "requestBody": {
+                    "description": "Jeton pack details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "The name of the jeton pack.",
+                                        "type": "string"
+                                    },
+                                    "price": {
+                                        "description": "The price of the jeton pack.",
+                                        "type": "number"
+                                    },
+                                    "quantity": {
+                                        "description": "The quantity of jetons in the pack.",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Jeton pack created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "description": "The ID of the created jeton pack.",
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "description": "The name of the jeton pack.",
+                                            "type": "string"
+                                        },
+                                        "price": {
+                                            "description": "The price of the jeton pack.",
+                                            "type": "number"
+                                        },
+                                        "quantity": {
+                                            "description": "The quantity of jetons in the pack.",
+                                            "type": "integer"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity. Issues with jeton pack details."
+                    },
+                    "500": {
+                        "description": "Internal server error or other unspecified error."
+                    }
+                }
+            }
+        },
+        "/api/products/create": {
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a new product",
+                "description": "Creates a new product with name, description, categories, and images. Requires multipart/form-data for image upload.",
+                "operationId": "54712ab5ee646a41a80bf51c57462969",
+                "requestBody": {
+                    "description": "Product data and images",
                     "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
                                 "required": [
-                                    "email",
-                                    "password",
-                                    "first_name",
-                                    "last_name"
+                                    "name",
+                                    "description",
+                                    "categories",
+                                    "images"
                                 ],
                                 "properties": {
-                                    "email": {
-                                        "description": "User email address.",
+                                    "name": {
+                                        "description": "Name of the product",
                                         "type": "string"
                                     },
-                                    "password": {
-                                        "description": "User password.",
+                                    "description": {
+                                        "description": "Description of the product",
                                         "type": "string"
                                     },
-                                    "first_name": {
-                                        "description": "User's first name.",
-                                        "type": "string"
+                                    "categories": {
+                                        "description": "List of category IDs for the product",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
                                     },
-                                    "last_name": {
-                                        "description": "User's last name.",
-                                        "type": "string"
-                                    },
-                                    "profile_picture": {
-                                        "description": "Profile picture file.",
-                                        "type": "string",
-                                        "format": "binary"
+                                    "images": {
+                                        "description": "Array of images for the product",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
                                     }
                                 },
                                 "type": "object"
@@ -186,13 +809,50 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "User registered successfully. Authentication token refreshed.",
+                        "description": "Product created successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "token": {
-                                            "description": "The new authentication token.",
+                                        "product": {
+                                            "description": "Details of the newly created product",
+                                            "properties": {
+                                                "id": {
+                                                    "description": "ID of the product",
+                                                    "type": "integer"
+                                                },
+                                                "name": {
+                                                    "description": "Name of the product",
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "description": "Description of the product",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "images": {
+                                            "description": "List of image URLs for the product",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Missing Required Fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Specific error message such as 'product_image_required' or 'product_category_required'",
                                             "type": "string"
                                         }
                                     },
@@ -201,11 +861,549 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Unprocessable Entity. Issues with user registration details."
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "General server error message",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get a product",
+                "description": "Retrieves detailed information about a product, including associated media and categories. Requires user authentication and that the user either owns the product or is an administrator.",
+                "operationId": "7930c324c1829f143e8f493a1300ced9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the product to retrieve",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "product": {
+                                            "description": "The product details",
+                                            "properties": {
+                                                "name": {
+                                                    "description": "Name of the product",
+                                                    "type": "string"
+                                                },
+                                                "description": {
+                                                    "description": "Description of the product",
+                                                    "type": "string"
+                                                },
+                                                "media": {
+                                                    "description": "List of media associated with the product",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "url": {
+                                                                "description": "URL of the media item",
+                                                                "type": "string"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "categories": {
+                                                    "description": "List of categories associated with the product",
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "name": {
+                                                                "description": "Name of the category",
+                                                                "type": "string"
+                                                            },
+                                                            "media": {
+                                                                "description": "Media associated with the category",
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "url": {
+                                                                            "description": "URL of the media item",
+                                                                            "type": "string"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized to view the product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating unauthorized access to view the product",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "product_unauthorized_view"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating the product was not found",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "product_not_found"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update a product",
+                "description": "Updates an existing product's details and manages associated images. Allows adding new images and deleting existing ones. Requires user authentication and that the user owns the product or is an administrator.",
+                "operationId": "814dc042adafdb289b2707c7297210a6",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the product to update",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Product details and images to update",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "Updated name of the product",
+                                        "type": "string"
+                                    },
+                                    "category": {
+                                        "description": "Updated category of the product",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Updated description of the product",
+                                        "type": "string"
+                                    },
+                                    "newImages": {
+                                        "description": "Array of new images for the product",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "format": "binary"
+                                        }
+                                    },
+                                    "deletedImages": {
+                                        "description": "Array of IDs for images to be deleted",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "True if the product was successfully updated",
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "description": "Success message confirming the product was updated",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true,
+                                        "message": "Product updated successfully"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized to update the product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating unauthorized access to update the product",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "product_unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating the product was not found",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "product_not_found"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a product",
+                "description": "Deletes a specified product by its ID. Requires user authentication and that the user owns the product or is an administrator.",
+                "operationId": "15e18f76ca2c8237518ec2c772e6d9df",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The ID of the product to delete",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "description": "True if the product was successfully deleted",
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "302": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating the product was not found",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating unauthorized access to delete the product",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true
+                                    }
+                                }
+                            }
+                        }
                     },
                     "500": {
-                        "description": "Internal server error or other unspecified error."
+                        "description": "Failed to delete product",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating failure to delete the product",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "success": true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get list of products",
+                "description": "Retrieves a list of products with optional filters, sorting, and pagination. Admins can view all products, while other users can only view their own products.",
+                "operationId": "92012f344c653a42e37c196297751a06",
+                "parameters": [
+                    {
+                        "name": "filters",
+                        "in": "query",
+                        "description": "Filter conditions for fetching products, such as category, price range, etc.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Field to order the products by",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Direction of the sort order (asc or desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of products per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of products retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "An array of products",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "name": {
+                                                        "description": "Name of the product",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the product",
+                                                        "type": "string"
+                                                    },
+                                                    "media": {
+                                                        "description": "Media associated with the product",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "url": {
+                                                                    "description": "URL of the media item",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    },
+                                                    "categories": {
+                                                        "description": "Categories of the product",
+                                                        "type": "array",
+                                                        "items": {
+                                                            "properties": {
+                                                                "name": {
+                                                                    "description": "Name of the category",
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "type": "object"
+                                                        }
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message explaining unauthorized access",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Unauthorized access"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user/buy-jeton-pack": {
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Buy Jeton Pack.\n\nThis endpoint is responsible for buying a jeton pack for the user.\nIt performs validation on the request data and, if successful, processes the purchase.\nThis process can result in various responses depending on the outcome of the purchase attempt.",
+                "description": "Buy a jeton pack for the user.",
+                "operationId": "864bf4e9d50fea1a4f0fb2faee73beba",
+                "requestBody": {
+                    "description": "Jeton pack details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "pack_id"
+                                ],
+                                "properties": {
+                                    "pack_id": {
+                                        "description": "ID of the jeton pack to buy",
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Jeton pack purchased successfully"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
                     }
                 }
             }
@@ -324,39 +1522,37 @@
                 }
             }
         },
-        "/api/user/update/detail": {
-            "patch": {
+        "/api/users/update-detail": {
+            "put": {
                 "tags": [
-                    "Auth"
+                    "User"
                 ],
-                "summary": "Update Existing User",
-                "description": "Update an existing user.\n\nThis endpoint is responsible for updating an existing user based on the provided details in the request body.\nIt performs validation on the request data and, if successful, updates the user account and optionally the profile picture,\nreturning a success message along with the updated user details. This process can result in various responses depending on the\noutcome of the update attempt.",
-                "operationId": "updateUser",
+                "summary": "Update user details",
+                "description": "Updates the authenticated user's details including first name, last name, and optionally the password and profile picture.",
+                "operationId": "e2dd2ab4b60138d42a20097b22dfd743",
                 "requestBody": {
-                    "description": "User update details with optional profile picture",
+                    "description": "User details and profile picture to update",
                     "required": true,
                     "content": {
                         "multipart/form-data": {
                             "schema": {
+                                "required": [],
                                 "properties": {
-                                    "email": {
-                                        "description": "User email address.",
-                                        "type": "string"
-                                    },
-                                    "password": {
-                                        "description": "User password.",
-                                        "type": "string"
-                                    },
                                     "first_name": {
-                                        "description": "User's first name.",
+                                        "description": "First name of the user",
                                         "type": "string"
                                     },
                                     "last_name": {
-                                        "description": "User's last name.",
+                                        "description": "Last name of the user",
                                         "type": "string"
                                     },
+                                    "password": {
+                                        "description": "New password for the user",
+                                        "type": "string",
+                                        "format": "password"
+                                    },
                                     "profile_picture": {
-                                        "description": "Profile picture file.",
+                                        "description": "Profile picture file",
                                         "type": "string",
                                         "format": "binary"
                                     }
@@ -368,13 +1564,51 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "User updated successfully.",
+                        "description": "User updated successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
+                                        "success": {
+                                            "description": "Indicates if the update was successful",
+                                            "type": "boolean"
+                                        },
                                         "message": {
-                                            "description": "Success message.",
+                                            "description": "Message about the result of the operation",
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "description": "Updated user details",
+                                            "properties": {
+                                                "first_name": {
+                                                    "description": "First name of the user",
+                                                    "type": "string"
+                                                },
+                                                "last_name": {
+                                                    "description": "Last name of the user",
+                                                    "type": "string"
+                                                },
+                                                "profile_picture": {
+                                                    "description": "URL of the new profile picture",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if the user is not authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message explaining the nature of the authentication error.",
                                             "type": "string"
                                         }
                                     },
@@ -383,11 +1617,21 @@
                             }
                         }
                     },
-                    "422": {
-                        "description": "Unprocessable Entity. Issues with user update details."
-                    },
                     "500": {
-                        "description": "Internal server error or other unspecified error."
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message explaining the nature of the server error.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
