@@ -29,47 +29,130 @@ class UpdateDetailUserController extends Controller
      * @param UpdateUserRequest $request The request object containing the user details
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    #[OA\Patch(
-        path: "/api/user/update/detail",
-        tags: ["Auth"],
-        summary: "Update Existing User",
-        operationId: "updateUser",
+    #[OA\Put(
+        path: "/api/users/update-detail",
+        tags: ["User"],
+        summary: "Update user details",
+        description: "Updates the authenticated user's details including first name, last name, and optionally the password and profile picture.",
         requestBody: new OA\RequestBody(
-            description: "User update details with optional profile picture",
+            description: "User details and profile picture to update",
             required: true,
-            content: new OA\MediaType(
-                mediaType: "multipart/form-data",
-                schema: new OA\Schema(
-                    properties: [
-                        new OA\Property(property: "email", type: "string", description: "User email address."),
-                        new OA\Property(property: "password", type: "string", description: "User password."),
-                        new OA\Property(property: "first_name", type: "string", description: "User's first name."),
-                        new OA\Property(property: "last_name", type: "string", description: "User's last name."),
-                        new OA\Property(property: "profile_picture", type: "string", format: "binary", description: "Profile picture file."),
-                    ],
+            content: [
+                new OA\MediaType(
+                    mediaType: "multipart/form-data",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "first_name",
+                                type: "string",
+                                description: "First name of the user"
+                            ),
+                            new OA\Property(
+                                property: "last_name",
+                                type: "string",
+                                description: "Last name of the user"
+                            ),
+                            new OA\Property(
+                                property: "password",
+                                type: "string",
+                                description: "New password for the user",
+                                format: "password"
+                            ),
+                            new OA\Property(
+                                property: "profile_picture",
+                                type: "string",
+                                format: "binary",
+                                description: "Profile picture file"
+                            )
+                        ],
+                        required: []
+                    )
                 )
-            ),
+            ]
         ),
         responses: [
             new OA\Response(
-                response: Response::HTTP_OK,
-                description: "User updated successfully.",
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: "message", type: "string", description: "Success message."),
-                    ]
+                response: "200",
+                description: "User updated successfully",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "success",
+                                type: "boolean",
+                                description: "Indicates if the update was successful"
+                            ),
+                            new OA\Property(
+                                property: "message",
+                                type: "string",
+                                description: "Message about the result of the operation"
+                            ),
+                            new OA\Property(
+                                property: "user",
+                                type: "object",
+                                description: "Updated user details",
+                                properties: [
+                                    new OA\Property(
+                                        property: "first_name",
+                                        type: "string",
+                                        description: "First name of the user"
+                                    ),
+                                    new OA\Property(
+                                        property: "last_name",
+                                        type: "string",
+                                        description: "Last name of the user"
+                                    ),
+                                    new OA\Property(
+                                        property: "profile_picture",
+                                        type: "string",
+                                        description: "URL of the new profile picture"
+                                    )
+                                ]
+                            )
+                        ]
+                    )
                 )
             ),
             new OA\Response(
-                response: Response::HTTP_UNPROCESSABLE_ENTITY,
-                description: "Unprocessable Entity. Issues with user update details."
+                response: "401",
+                description: "Unauthorized if the user is not authenticated",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "error",
+                                type: "string",
+                                description: "Error message explaining the nature of the authentication error."
+                            )
+                        ]
+                    )
+                )
             ),
             new OA\Response(
-                response: Response::HTTP_INTERNAL_SERVER_ERROR,
-                description: "Internal server error or other unspecified error."
+                response: "500",
+                description: "Internal server error",
+                content: new OA\MediaType(
+                    mediaType: "application/json",
+                    schema: new OA\Schema(
+                        type: "object",
+                        properties: [
+                            new OA\Property(
+                                property: "error",
+                                type: "string",
+                                description: "Error message explaining the nature of the server error."
+                            )
+                        ]
+                    )
+                )
             )
         ]
     )]
+    
     public function __invoke(UpdateUserDetailRequest $request) : JsonResponse
     {   
         $this->userRepository = new UserRepository();

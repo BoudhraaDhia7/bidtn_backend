@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\Media;
+use App\Models\Product;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -14,25 +16,20 @@ class MediaTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('medias')->insert([
-            'model_type'=>'App\Models\Product',
-            'model_id'=> '1',
-            'file_name'=>'test',
-            'file_path'=>'https://picsum.photos/200',
-        ]);
+        $products = Product::all();
+        $base_url = 'https://picsum.photos/200/300?random=';
 
-        DB::table('medias')->insert([
-            'model_type'=>'App\Models\Product',
-            'model_id'=> '1',
-            'file_name'=>'test',
-            'file_path'=>'https://picsum.photos/200',
-        ]);
-
-        DB::table('medias')->insert([
-            'model_type'=>'App\Models\Product',
-            'model_id'=> '1',
-            'file_name'=>'test',
-            'file_path'=>'https://picsum.photos/200',
-        ]);
+        foreach ($products as $product) {
+            for ($j = 1; $j <= 2; $j++) {
+                Media::create([
+                    'model_type' => 'App\Models\Product',
+                    'model_id' => $product->id,
+                    'file_name' => "Image_{$j}_Product_{$product->id}.jpg",
+                    'file_path' => "{$base_url}{$product->id}$j", 
+                    'file_type' => 'image/jpeg'
+                ]);
+            }
+        }
     }
+
 }

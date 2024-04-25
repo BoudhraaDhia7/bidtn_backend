@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Exceptions\GlobalException;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
+use App\Models\Product;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -18,7 +20,7 @@ class AuctionRepository
      */
     public static function index(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::query();
+        $auctionQuery = Auction::with(['product.media' , 'product.categories']);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
@@ -41,14 +43,23 @@ class AuctionRepository
     public static function createAuction($validated, $user): array
     {
 
-        $attributesToSet = ['title', 'description', 'starting_price', 'start_date', 'end_date'];
+        $attributesToSet = ['title', 'description', 'starting_price', 'start_date', 'end_date' , 'starting_user_number', 'is_confirmed' , 'is_finished'];
 
         $filteredAttributes = array_intersect_key($validated, array_flip($attributesToSet));
+
         $filteredAttributes['user_id'] = $user->id;
         $auction = Auction::create($filteredAttributes);
 
+        //relation with product && check if product exists and belongs to the user
+        $product = Product::where('id', $validated['product_id'])->where('user_id', $user->id)->first();
+        if(!$product){
+            throw new GlobalException('product_not_found' , 404);
+        }
+
+        $auction->product()->save($product);
+
         if (!$auction) {
-            throw new GlobalException('auction_creation_failed');
+            throw new GlobalException('auction_creation_failed' , 400);
         }
 
         return $auction->toArray();

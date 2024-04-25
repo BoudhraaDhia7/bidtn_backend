@@ -39,6 +39,8 @@ use App\Http\Controllers\Api\Categories\GetCategoriesController;
 |
 */
 
+//TODO ----------- ADD DB TRANSACTION TO SOME ROUTES
+
 //User Auth routes group
 Route::group(['prefix' => 'auth'], function () {
     Route::post('register', RegisterUserController::class)->name('register_user');
@@ -48,7 +50,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 //User Crud route group protected by auth middleware
 Route::group(['prefix' => 'users', 'middleware' => 'user.auth'], function () {
-    Route::get('    get-auth-user', GetUserController::class)->name('get_auth_user');
+    Route::get('get-auth-user', GetUserController::class)->name('get_auth_user');
     Route::post('buy-jeton-pack', BuyJetonPackController::class)->name('buy_jetons');
     Route::put('update-detail',UpdateDetailUserController::class)->name('update_user');
     Route::delete('{id}', DeleteUserController::class)->name('delete_user');
@@ -83,10 +85,13 @@ Route::group(['prefix' => 'products', 'middleware' => ['user.auth']], function (
 });   
 
 Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () {
-    Route::get('/', GetAuctionsController::class)->name('get_all_auctions');
     Route::post('create', CreateAuction::class)->name('create_auction');
     //Route::delete('{id}', 'DeleteAuctionController')->name('delete_auction');
     //Route::put('{id}', 'UpdateAuctionController')->name('update_auction');
+});
+
+Route::group(['prefix' => 'auction'], function () {
+    Route::get('/', GetAuctionsController::class)->name('get_all_auctions');
 });
 
 Route::group(['prefix' => 'categories'] , function(){
