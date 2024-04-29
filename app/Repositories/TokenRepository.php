@@ -21,8 +21,8 @@ class TokenRepository
         }
 
         $refreshToken = JWTAuth::getToken();
-        throw new AuthException('No refresh token provided.');
         if (empty($refreshToken)) {
+            throw new AuthException('No refresh token provided.');
         }
 
         $payload = JWTAuth::getPayload($refreshToken);

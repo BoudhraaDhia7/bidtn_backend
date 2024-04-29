@@ -144,7 +144,7 @@ class CreateAuction
         try {
             $user = AuthHelper::currentUser();
             $validated = $this->getAttributes($request);
-            $auction = AuctionRepository::createAuction($validated , $user);
+            $auction = AuctionRepository::createAuction($validated , $validated['products'] , $user);
             return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
