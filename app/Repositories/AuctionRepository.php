@@ -3,15 +3,17 @@
 namespace App\Repositories;
 
 use App\Exceptions\GlobalException;
+use App\Helpers\MediaHelpers;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
 use App\Models\Product;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class AuctionRepository
-{   
+{
     /**
      * Get all auctions from the database.
      *
@@ -20,7 +22,7 @@ class AuctionRepository
      */
     public static function index(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media' , 'product.categories']);
+        $auctionQuery = Auction::with(['product.media', 'product.categories']);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
@@ -29,7 +31,7 @@ class AuctionRepository
         } else {
             $auctions = $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection())->get();
         }
-        
+
         return $auctions;
     }
 
@@ -40,28 +42,59 @@ class AuctionRepository
      * @return array
      * @throws Exception if the auction creation fails
      */
-    public static function createAuction($validated, $user): array
+    public static function createAuction($title, $description, $startingPrice, $startDate, $endDate, $startingUserNumber, $products , $user): array
     {
+        try {
+            DB::beginTransaction();
 
-        $attributesToSet = ['title', 'description', 'starting_price', 'start_date', 'end_date' , 'starting_user_number', 'is_confirmed' , 'is_finished'];
 
-        $filteredAttributes = array_intersect_key($validated, array_flip($attributesToSet));
+            $auction = Auction::create([
+                'title' => $title,
+                'description' => $description,
+                'starting_price' => $startingPrice,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'starting_user_number' => $startingUserNumber,
+                'user_id' => $user->id
+            
+            ]);
+            if (!$auction) {
+                DB::rollback();
+                throw new GlobalException('Auction creation failed', 400);
+            }
 
-        $filteredAttributes['user_id'] = $user->id;
-        $auction = Auction::create($filteredAttributes);
-
-        //relation with product && check if product exists and belongs to the user
-        $product = Product::where('id', $validated['product_id'])->where('user_id', $user->id)->first();
-        if(!$product){
-            throw new GlobalException('product_not_found' , 404);
+            self::processProducts($products, $user, $auction);  
+            DB::commit();
+            return $auction->toArray();
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
         }
-
-        $auction->product()->save($product);
-
-        if (!$auction) {
-            throw new GlobalException('auction_creation_failed' , 400);
-        }
-
-        return $auction->toArray();
     }
+    
+    private static function processProducts($products, $user, $auction)
+    {
+        foreach ($products as $productData) {
+            $productData['auction_id'] = $auction->id;
+            $productData['user_id'] = $user->id;
+
+            $product = Product::create($productData);
+            if (!$product) {
+                throw new GlobalException('Product creation failed', 404);
+            }
+
+            self::attachMediaAndCategories($product, $productData);
+        }
+    }
+
+    private static function attachMediaAndCategories($product, $productData)
+    {
+        foreach ($productData['files'] as $file) {
+            $mediaData = MediaHelpers::storeMedia($file, 'product_images', $product);
+            MediaRepository::attachMediaToModel($product, $mediaData);
+        }
+        $product->categories()->attach($productData['categories']);
+    }
+
+    
 }
