@@ -13,7 +13,7 @@ use App\Helpers\ResponseHelper;
 use App\Repositories\AuctionRepository;
 use App\Http\Requests\StoreAuctionRequest;
 
-class CreateAuction
+class CreateAuctionController
 {
     /**
      * Store a new auction in the database.
@@ -144,9 +144,10 @@ class CreateAuction
         try {
             $user = AuthHelper::currentUser();
             $validated = $this->getAttributes($request);
-            $auction = AuctionRepository::createAuction($validated , $validated['products'] , $user);
+            $auction = AuctionRepository::createAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['end_date'],$validated['starting_user_number'],$validated['products'], $user);
             return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
+            dd($e->getMessage());
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
@@ -154,7 +155,16 @@ class CreateAuction
 
     private function getAttributes(StoreAuctionRequest $request): array
     {
-        return $request->validated();
+        return [
+            'title' => $request->title,
+            'description' => $request->description,
+            'starting_price' => $request->startingPrice,
+            'start_date' => $request->startDate,
+            'end_date' => $request->endDate,
+            'starting_user_number' => $request->startingUserNumber,
+            'products' => $request->products
+        ];
+        
     }
 }
 

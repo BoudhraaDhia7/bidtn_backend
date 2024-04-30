@@ -42,15 +42,22 @@ class AuctionRepository
      * @return array
      * @throws Exception if the auction creation fails
      */
-    public static function createAuction($validated, $products, $user): array
+    public static function createAuction($title, $description, $startingPrice, $startDate, $endDate, $startingUserNumber, $products , $user): array
     {
         try {
             DB::beginTransaction();
 
-            $auctionAttributes = self::filterAuctionAttributes($validated);
-            $auctionAttributes['user_id'] = $user->id;
 
-            $auction = Auction::create($auctionAttributes);
+            $auction = Auction::create([
+                'title' => $title,
+                'description' => $description,
+                'starting_price' => $startingPrice,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'starting_user_number' => $startingUserNumber,
+                'user_id' => $user->id
+            
+            ]);
             if (!$auction) {
                 DB::rollback();
                 throw new GlobalException('Auction creation failed', 400);
@@ -89,9 +96,5 @@ class AuctionRepository
         $product->categories()->attach($productData['categories']);
     }
 
-    private static function filterAuctionAttributes($validated): array
-    {
-        $attributesToSet = ['title', 'description', 'starting_price', 'start_date', 'end_date', 'starting_user_number', 'is_confirmed', 'is_finished'];
-        return array_intersect_key($validated, array_flip($attributesToSet));
-    }
+    
 }
