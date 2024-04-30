@@ -20,19 +20,90 @@ class AuctionRepository
      * @param QueryConfig $queryConfig
      * @return LengthAwarePaginator|Collection
      */
-    public static function index(QueryConfig $queryConfig): LengthAwarePaginator|Collection
+    public static function index(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {
         $auctionQuery = Auction::with(['product.media', 'product.categories']);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
-        if ($queryConfig->getPaginated()) {
-            $auctions = $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection())->paginate($queryConfig->getPerPage());
-        } else {
-            $auctions = $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection())->get();
+        if (!$user->isAdmin) {
+            $auctionQuery->where('user_id', $user->id);
         }
 
-        return $auctions;
+        $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+
+        if ($queryConfig->isPaginated()) {
+            return $auctionQuery->paginate($queryConfig->getPerPage());
+        }
+
+        return $auctionQuery->get();
+    }
+
+     /**
+     * Get a product.
+     *
+     * @param int $id
+     * @param $user
+     * @return Auction
+     */
+    public static function getAuction($id, $user)
+    {
+        
+        $auction = Auction::with(['product.media', 'product.categories'])->find($id);
+ 
+        if (!$user->isAdmin && $auction->user_id !== $user->id) {
+            throw new GlobalException('product_unauthorized_view' ,  401);
+        }
+
+        return [$auction];
+    }
+
+    /**
+     * update a auction record in the database.
+     *
+     * @param array $validated Validated data from the request
+     * @return array
+     * @throws Exception if the auction creation fails
+     */
+
+    //public static function updateProduct($id, $name, $category, $description, array $newImageArray, array $deletedImages, $user)
+    public static function updateAuction($title, $description, $startingPrice, $startDate, $endDate, $startingUserNumber, $products, $user , $id)
+    {   
+        $auction = Auction::find($id);
+
+        if (!$auction) {
+            throw new GlobalException('product_not_found', 404);
+        }
+        
+        if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
+            throw new GlobalException('product_unauthorized' , 401);
+        }
+
+        if($auction->is_confirmed){
+            throw new GlobalException('auction_allready_confirmed' , 401);
+        }
+
+        $auction->update([
+            'title' => $title,
+            'description' => $description,
+            'startingPrice' => $startingPrice,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'startingUserNumber' => $startingUserNumber,
+        ]);
+
+        foreach($products as $product){
+            $id = $product['id'];
+            $name = $product['name'];
+            $categories = $product['categories'];
+            $description = $product['description'];
+            $newImageArray = isset($product['newImageArray']) ? $product['newImageArray'] : [];
+            $deletedImages = isset($product['deletedImages']) ? $product['deletedImages'] : [];
+            ProductRepository::updateProduct($id, $name, $categories, $description, $newImageArray, $deletedImages, $user);
+        }
+
+        return $auction;
+
     }
 
     /**
@@ -42,11 +113,10 @@ class AuctionRepository
      * @return array
      * @throws Exception if the auction creation fails
      */
-    public static function createAuction($title, $description, $startingPrice, $startDate, $endDate, $startingUserNumber, $products , $user): array
+    public static function createAuction($title, $description, $startingPrice, $startDate, $endDate, $startingUserNumber, $products, $user): array
     {
         try {
             DB::beginTransaction();
-
 
             $auction = Auction::create([
                 'title' => $title,
@@ -55,15 +125,14 @@ class AuctionRepository
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'starting_user_number' => $startingUserNumber,
-                'user_id' => $user->id
-            
+                'user_id' => $user->id,
             ]);
             if (!$auction) {
                 DB::rollback();
                 throw new GlobalException('Auction creation failed', 400);
             }
 
-            self::processProducts($products, $user, $auction);  
+            self::processProducts($products, $user, $auction);
             DB::commit();
             return $auction->toArray();
         } catch (\Exception $e) {
@@ -71,7 +140,7 @@ class AuctionRepository
             throw $e;
         }
     }
-    
+
     private static function processProducts($products, $user, $auction)
     {
         foreach ($products as $productData) {
@@ -95,6 +164,4 @@ class AuctionRepository
         }
         $product->categories()->attach($productData['categories']);
     }
-
-    
 }
