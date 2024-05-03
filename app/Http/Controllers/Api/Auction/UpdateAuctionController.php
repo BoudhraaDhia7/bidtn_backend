@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
+use App\Exceptions\GlobalException;
 use OpenApi\Attributes as OA;
 
 use App\Helpers\AuthHelper;
@@ -12,6 +13,7 @@ use App\Traits\GlobalResponse;
 use App\Helpers\ResponseHelper;
 use App\Repositories\AuctionRepository;
 use App\Http\Requests\UpdateAuctionRequest;
+use App\Models\Auction;
 
 class UpdateAuctionController
 {
@@ -141,12 +143,23 @@ class UpdateAuctionController
     
     public function __invoke(UpdateAuctionRequest $request , $id)
     {   
-        $user = AuthHelper::currentUser();
-        $validated = $this->getAttributes($request);
-        $auction = AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $user , $id);
-        return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
+        $auction = Auction::FindOrFail($id);
         try {
-           
+            $user = AuthHelper::currentUser();
+            if (!$auction) {
+                throw new GlobalException('product_not_found', 404);
+            }
+            
+            if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
+                throw new GlobalException('product_unauthorized' , 401);
+            }
+    
+            if($auction->is_confirmed){
+                throw new GlobalException('auction_allready_confirmed' , 401);
+            }
+            $validated = $this->getAttributes($request);
+            $auction =AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $auction , $user);
+            return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));

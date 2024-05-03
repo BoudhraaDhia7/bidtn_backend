@@ -39,25 +39,6 @@ class AuctionRepository
         return $auctionQuery->get();
     }
 
-     /**
-     * Get a product.
-     *
-     * @param int $id
-     * @param $user
-     * @return Auction
-     */
-    public static function getAuction($id, $user)
-    {
-        
-        $auction = Auction::with(['product.media', 'product.categories'])->find($id);
-
-        if (!$user->isAdmin && $auction->user_id !== $user->id) {
-            throw new GlobalException('product_unauthorized_view' ,  401);
-        }
-
-        return [$auction];
-    }
-
     /**
      * update a auction record in the database.
      *
@@ -67,22 +48,8 @@ class AuctionRepository
      */
 
     //public static function updateProduct($id, $name, $category, $description, array $newImageArray, array $deletedImages, $user)
-    public static function updateAuction($title, $description, $startingPrice, $startDate, $startingUserNumber, $products, $user , $id)
+    public static function updateAuction($title, $description, $startingPrice, $startDate, $startingUserNumber, $products, $auction , $user)
     {   
-        $auction = Auction::find($id);
-
-        if (!$auction) {
-            throw new GlobalException('product_not_found', 404);
-        }
-        
-        if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
-            throw new GlobalException('product_unauthorized' , 401);
-        }
-
-        if($auction->is_confirmed){
-            throw new GlobalException('auction_allready_confirmed' , 401);
-        }
-
         DB::beginTransaction();
 
         $auction->update([
@@ -187,22 +154,8 @@ class AuctionRepository
      * @param $user
      * @return Auction
      */
-    public static function deleteAuction($id, $user)
+    public static function deleteAuction($auction)
     {
-        $auction = Auction::find($id);
-
-        if (!$auction) {
-            throw new GlobalException('auction_not_found', 404);
-        }
-
-        if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
-            throw new GlobalException('auction_unauthorized' , 401);
-        }
-
-        if($auction->is_confirmed){
-            throw new GlobalException('auction_allready_confirmed' , 401);
-        }
-
         $auction->delete();
 
         return $auction;
