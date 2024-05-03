@@ -14,7 +14,7 @@ use App\Traits\PaginationParams;
 use Illuminate\Http\JsonResponse;
 use App\Repositories\AuctionRepository;
 
-class GetAuctionsController
+class GetAuctionController
 {
     use GlobalResponse;
     use PaginationParams;
@@ -27,7 +27,7 @@ class GetAuctionsController
      */
     #[
         OA\Get(
-            path: '/api/auctions',
+            path: '/api/auction',
             tags: ['Auction'],
             summary: 'List auctions',
             description: 'Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.',
@@ -51,13 +51,12 @@ class GetAuctionsController
             ],
         ),
     ]
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke($id): JsonResponse
     {
         try {
             $user = AuthHelper::currentUser();
-            $params = $this->getAttributes($request);
-            $auctions = AuctionRepository::index($params , $user);
-            return $this->GlobalResponse('auctions_retrieved', Response::HTTP_OK, $auctions, $params->getPaginated());
+            $auctions = AuctionRepository::getAuction ($id , $user);
+            return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, $auctions);
         } catch (\Exception $e) {
             \Log::error('GetLiveAuctionController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));

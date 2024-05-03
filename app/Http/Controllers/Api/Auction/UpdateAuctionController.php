@@ -13,7 +13,7 @@ use App\Helpers\ResponseHelper;
 use App\Repositories\AuctionRepository;
 use App\Http\Requests\StoreAuctionRequest;
 
-class CreateAuctionController
+class UpdateAuctionController
 {
     /**
      * Store a new auction in the database.
@@ -24,10 +24,10 @@ class CreateAuctionController
 
     use GlobalResponse;
     #[OA\Post(
-        path: "/api/auctions",
+        path: "/api/auctions/{id}",
         tags: ["Auction"],
-        summary: "Create a new auction",
-        description: "Creates a new auction with specified details. Requires user authentication and returns the created auction's data.",
+        summary: "Update a new auction",
+        description: "Update a new auction with specified details. Requires user authentication and returns the created auction's data.",
         requestBody: new OA\RequestBody(
             description: "Auction details required to create a new auction",
             required: true,
@@ -139,13 +139,13 @@ class CreateAuctionController
         ]
     )]
     
-    public function __invoke(StoreAuctionRequest $request)
+    public function __invoke(StoreAuctionRequest $request , $id)
     {        
         try {
             $user = AuthHelper::currentUser();
             $validated = $this->getAttributes($request);
-            $auction = AuctionRepository::createAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['end_date'],$validated['starting_user_number'],$validated['products'], $user);
-            return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
+            $auction = AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['end_date'],$validated['starting_user_number'],$validated['products'], $user , $id);
+            return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
