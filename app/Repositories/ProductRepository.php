@@ -8,6 +8,7 @@ use App\Helpers\QueryConfig;
 use App\Helpers\MediaHelpers;
 use Tymon\JWTAuth\Claims\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class ProductRepository
 {
@@ -18,8 +19,9 @@ class ProductRepository
      * @param array $data
      * @return Product
      */
-    public static function storeProduct($name, $description, array $categoriesArray, array $imageArray, $user) : array
-    {
+    public static function storeProduct($name, $description, array $categoriesArray, array $imageArray, $user , $auction) : array
+    {   
+
         if (empty($imageArray)) {
             throw new GlobalException('product_image_required' , 400);
         }
@@ -32,6 +34,7 @@ class ProductRepository
             'name' => $name,
             'description' => $description,
             'user_id' => $user->id,
+            'auction_id' => $auction->id ?? '',
         ]);
 
         $product->categories()->attach($categoriesArray);
@@ -128,13 +131,14 @@ class ProductRepository
     public static function updateProduct($id, $name, $category, $description, array $newImageArray, array $deletedImages, $user)
     {   
         $product = Product::find($id);
-
         if (!$product) {
             throw new GlobalException('product_not_found', 404);
+            DB::rollBack();
         }
 
         if ($product->user_id !== auth()->user()->id && !$user->isAdmin) {
             throw new GlobalException('product_unauthorized' , 401);
+            DB::rollBack();
         }
 
         $product->update([
@@ -142,7 +146,7 @@ class ProductRepository
             'category' => $category,
             'description' => $description,
         ]);
-
+        
         MediaRepository::detachMediaFromModel($product, $product->id, $deletedImages);
         foreach ($newImageArray as $image) {
             $mediaData = MediaHelpers::storeMedia($image, 'product_images', $product);

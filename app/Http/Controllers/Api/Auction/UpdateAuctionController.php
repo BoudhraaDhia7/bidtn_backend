@@ -11,7 +11,7 @@ use Illuminate\Http\Response;
 use App\Traits\GlobalResponse;
 use App\Helpers\ResponseHelper;
 use App\Repositories\AuctionRepository;
-use App\Http\Requests\StoreAuctionRequest;
+use App\Http\Requests\UpdateAuctionRequest;
 
 class UpdateAuctionController
 {
@@ -139,27 +139,28 @@ class UpdateAuctionController
         ]
     )]
     
-    public function __invoke(StoreAuctionRequest $request , $id)
-    {        
+    public function __invoke(UpdateAuctionRequest $request , $id)
+    {   
+        $user = AuthHelper::currentUser();
+        $validated = $this->getAttributes($request);
+        $auction = AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $user , $id);
+        return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
         try {
-            $user = AuthHelper::currentUser();
-            $validated = $this->getAttributes($request);
-            $auction = AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['end_date'],$validated['starting_user_number'],$validated['products'], $user , $id);
-            return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
+           
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
         }
     }
 
-    private function getAttributes(StoreAuctionRequest $request): array
-    {
+    private function getAttributes(UpdateAuctionRequest $request): array
+    {   
+
         return [
             'title' => $request->title,
             'description' => $request->description,
             'starting_price' => $request->startingPrice,
             'start_date' => $request->startDate,
-            'end_date' => $request->endDate,
             'starting_user_number' => $request->startingUserNumber,
             'products' => $request->products
         ];

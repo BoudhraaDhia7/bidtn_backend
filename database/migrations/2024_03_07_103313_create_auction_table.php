@@ -22,7 +22,7 @@ return new class extends Migration
             $table->boolean('is_finished')->default(false);
             $table->boolean('is_confirmed')->default(false);
             $table->integer('starting_user_number')->default(7);
-            $table->unsignedBigInteger('end_date')->default(time());
+            $table->unsignedBigInteger('end_date')->nullable();
             $table->unsignedBigInteger('start_date')->default(time());
             $table->unsignedBigInteger('created_at')->default(time());
             $table->unsignedBigInteger('updated_at')->default(time());

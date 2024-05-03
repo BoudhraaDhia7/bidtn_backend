@@ -55,7 +55,7 @@ class GetAuctionController
     {
         try {
             $user = AuthHelper::currentUser();
-            $auctions = AuctionRepository::getAuction ($id , $user);
+            $auctions = AuctionRepository::getAuction($id , $user);
             return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, $auctions);
         } catch (\Exception $e) {
             \Log::error('GetLiveAuctionController: Error retrieving auctions' . $e->getMessage());

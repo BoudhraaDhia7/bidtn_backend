@@ -41,12 +41,13 @@ class MediaRepository
     public static function detachMediaFromModel(Model $model, $mediaId, $imageToDeatch): void
     {
         $modelType = get_class($model);
+
         Media::where([
             'model_type' => $modelType,
             'model_id' => $mediaId,
         ])
             ->whereIn('id', $imageToDeatch)
-            ->update(['deleted_at' => time()]);
-            
+            ->update(['deleted_at' => time()]); 
+  
     }
 }

@@ -144,7 +144,7 @@ class CreateAuctionController
         try {
             $user = AuthHelper::currentUser();
             $validated = $this->getAttributes($request);
-            $auction = AuctionRepository::createAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['end_date'],$validated['starting_user_number'],$validated['products'], $user);
+            $auction = AuctionRepository::createAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $user);
             return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
@@ -159,7 +159,6 @@ class CreateAuctionController
             'description' => $request->description,
             'starting_price' => $request->startingPrice,
             'start_date' => $request->startDate,
-            'end_date' => $request->endDate,
             'starting_user_number' => $request->startingUserNumber,
             'products' => $request->products
         ];
