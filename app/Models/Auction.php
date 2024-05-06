@@ -6,7 +6,6 @@ use App\Models\Product;
 use App\Traits\ApplyQueryScopes;
 use App\Traits\PaginationParams;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,25 +14,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Auction extends Model
 {
     use HasFactory;
-    
-    use ApplyQueryScopes, PaginationParams;
 
+    use ApplyQueryScopes, PaginationParams;
 
     public $timestamps = false;
 
-    protected $fillable = [
-        'title',
-        'description',
-        'starting_price',
-        'is_finished',
-        'starting_user_number',
-        'is_confirmed',
-        'user_id',
-        'start_date',
-        'end_date',
-        'created_at',
-        'updated_at',
-    ];
+    protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
 
     public static function boot()
     {
@@ -48,7 +34,7 @@ class Auction extends Model
             $model->updated_at = time();
         });
     }
-    
+
     public function Product(): HasMany
     {
         return $this->hasMany(Product::class, 'auction_id');
@@ -65,22 +51,22 @@ class Auction extends Model
     {
         if ($keyword !== null) {
             $query->where(function ($subQuery) use ($keyword) {
-                $subQuery->where('title', 'like', '%' . $keyword . '%')
-                         ->orWhere('description', 'like', '%' . $keyword . '%')
-                         ->orWhere('starting_price', 'like', '%' . $keyword . '%')
-                         ->orWhere('is_finished', 'like', '%' . $keyword . '%')
-                         ->orWhere('starting_user_number', 'like', '%' . $keyword . '%')
-                         ->orWhereHas('product.categories', function ($query) use ($keyword) {
-                             $query->where('name', 'like', '%' . $keyword . '%');
-                         });
+                $subQuery
+                    ->where('title', 'like', '%' . $keyword . '%')
+                    ->orWhere('description', 'like', '%' . $keyword . '%')
+                    ->orWhere('starting_price', 'like', '%' . $keyword . '%')
+                    ->orWhere('is_finished', 'like', '%' . $keyword . '%')
+                    ->orWhere('starting_user_number', 'like', '%' . $keyword . '%')
+                    ->orWhereHas('product.categories', function ($query) use ($keyword) {
+                        $query->where('name', 'like', '%' . $keyword . '%');
+                    });
             });
         }
         return $query;
     }
-    
 
     public function scopeFilterByCategory($query, $category)
-    {   
+    {
         if ($category !== null) {
             $query->whereHas('product.categories', function ($query) use ($category) {
                 $query->whereIn('name', $category);
@@ -89,4 +75,11 @@ class Auction extends Model
         return $query;
     }
 
+    /**
+     * Get the participants in the auction.
+     */
+    public function participants(): HasMany
+    {
+        return $this->hasMany(AuctionParticipant::class, 'auction_id');
+    }
 }

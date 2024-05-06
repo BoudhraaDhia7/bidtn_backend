@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\Jetons\CreateJetonPackController;
 use App\Http\Controllers\Api\Auction\CreateAuctionController;
 use App\Http\Controllers\Api\Auction\DeleteAuctionController;
 use App\Http\Controllers\Api\Auction\GetAuctionsController;
+use App\Http\Controllers\Api\Auction\JoinAuctionController;
 use App\Http\Controllers\Api\Auction\ListAuctionsController;
 use App\Http\Controllers\Api\Auction\ShowAuctionController;
 use App\Http\Controllers\Api\Auction\UpdateAuctionController;
@@ -93,7 +94,7 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::post('/create', CreateAuctionController::class)->name('create_auction');
     Route::post('/update/{id}', UpdateAuctionController::class)->name('update_auction');
     Route::delete('/{id}', DeleteAuctionController::class)->name('delete_auction');
-    //Route::put('{id}', 'UpdateAuctionController')->name('update_auction');
+    Route::post('/join/{id}', JoinAuctionController::class)->name('join_auction');
 });
 
 Route::group(['prefix' => 'auction'], function () {

@@ -6,6 +6,7 @@ use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
+use App\Models\AuctionParticipant;
 use App\Models\Product;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -158,6 +159,36 @@ class AuctionRepository
     {
         $auction->delete();
 
+        return $auction;
+    }
+
+    /**
+     * Join a auction record in the database.
+     *
+     * @param Auction $auction
+     * @param $user
+     * @return Auction
+     */
+    public static function joinAuction($auction, $user)
+    {   
+        DB::beginTransaction();
+        
+        $joinTransaction =AuctionParticipant::create([
+            'auction_id' => $auction->id,
+            'user_id' => $user->id,
+            'is_paid' => true,
+            'paid_amount' => $auction->starting_price,
+        ]);
+
+        if(!$joinTransaction){
+            DB::rollback();
+            throw new GlobalException('Auction join failed', 400);
+        }
+
+        $user->balance -= $auction->starting_price;
+        $user->save();
+
+        DB::commit();
         return $auction;
     }
 }

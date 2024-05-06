@@ -16,7 +16,7 @@ class UsersTableSeeder extends Seeder
     public function run()
     {
         // Clear existing records
-        DB::table('users')->truncate();
+        //DB::table('users')->truncate();
 
         DB::table('users')->insert([
             [
