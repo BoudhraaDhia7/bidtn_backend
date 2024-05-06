@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // TODO: Refactor the model
 class Auction extends Model
@@ -48,9 +49,9 @@ class Auction extends Model
         });
     }
     
-    public function Product(): HasOne
+    public function Product(): HasMany
     {
-        return $this->hasOne(Product::class, 'auction_id');
+        return $this->hasMany(Product::class, 'auction_id');
     }
 
     public function media(): MorphMany
@@ -79,7 +80,7 @@ class Auction extends Model
     
 
     public function scopeFilterByCategory($query, $category)
-    {
+    {   
         if ($category !== null) {
             $query->whereHas('product.categories', function ($query) use ($category) {
                 $query->whereIn('name', $category);

@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
+
 use App\Helpers\AuthHelper;
 use OpenApi\Attributes as OA;
 
-use App\Helpers\QueryConfig;
-use App\Helpers\ResponseHelper;
+
+use App\Models\Auction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Traits\GlobalResponse;
 use App\Traits\PaginationParams;
 use Illuminate\Http\JsonResponse;
-use App\Repositories\AuctionRepository;
 
-class GetAuctionsController
+class ShowAuctionController
 {
     use GlobalResponse;
     use PaginationParams;
@@ -27,7 +27,7 @@ class GetAuctionsController
      */
     #[
         OA\Get(
-            path: '/api/auctions',
+            path: '/api/auction',
             tags: ['Auction'],
             summary: 'List auctions',
             description: 'Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.',
@@ -51,39 +51,23 @@ class GetAuctionsController
             ],
         ),
     ]
-    public function __invoke(Request $request): JsonResponse
+
+    public function __invoke($id): JsonResponse
     {
-        try {
-            $user = AuthHelper::currentUser();
-            $params = $this->getAttributes($request);
-            $auctions = AuctionRepository::index($params , $user);
-            return $this->GlobalResponse('auctions_retrieved', Response::HTTP_OK, $auctions, $params->getPaginated());
-        } catch (\Exception $e) {
-            \Log::error('GetLiveAuctionController: Error retrieving auctions' . $e->getMessage());
-            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
-        }
+        $auction = Auction::with(['product.media', 'product.categories'])->findOrFail($id);
+        $this->checkAuthrization($auction);
+        return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, [$auction]);
     }
+  
 
     /**
-     * @param Request $request
-     * @return QueryConfig
+     * Check if the user is authorized to view the auction
      */
-    private function getAttributes(Request $request): QueryConfig
-    {
-        $paginationParams = $this->getPaginationParams($request);
-
-        $filters = [
-            'category' => $request->input('categories') ?? null,
-            'keyword' => $request->input('keyword') ?? null,
-        ];
-
-        $search = new QueryConfig();
-        $search
-            ->setFilters($filters)
-            ->setPerPage($paginationParams['PER_PAGE'])
-            ->setOrderBy($paginationParams['ORDER_BY'])
-            ->setDirection($paginationParams['DIRECTION'])
-            ->setPaginated($paginationParams['PAGINATION']);
-        return $search;
+    private function checkAuthrization($auction)
+    {   
+        $user = auth()->user();
+        if ($user->cannot('showAuction', [$user, $auction])) {
+            return $this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED);
+        }
     }
 }

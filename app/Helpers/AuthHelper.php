@@ -2,6 +2,7 @@
 namespace App\Helpers;
 
 use App\Exceptions\GlobalException;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class AuthHelper
@@ -15,7 +16,7 @@ class AuthHelper
     {   
         $user = Auth::user();
         if(!$user){
-            throw new GlobalException('unauthorized', 401);
+            throw new GlobalException('unauthorized', Response::HTTP_UNAUTHORIZED);
         }
         return (object) [
             'id' => $user->id,

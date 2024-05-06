@@ -3,7 +3,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreAuctionRequest extends FormRequest
+class UpdateAuctionRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -26,15 +26,17 @@ class StoreAuctionRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'required|string', 
             'startingPrice' => 'required|integer|min:0',
-            'startDate' => 'required|integer',
+            'startDate' => 'required|integer',            
             'startingUserNumber' => 'required|integer|min:1',
-            'products' => 'required|array',
+            'products' => 'array',
             'products.*.name' => 'required|string',
             'products.*.description' => 'required|string',
             'products.*.categories' => 'required|array',
             'products.*.categories.*' => 'required|numeric|exists:categories,id',
-            'products.*.files' => 'required|array',
-            'products.*.files.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'products.*.files' => 'array',
+            'products.*.files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'products.*.deletedMedia' => 'array',
+            'products.*.deletedMedia.*' => 'numeric|exists:medias,id',
         ];
     }
     
