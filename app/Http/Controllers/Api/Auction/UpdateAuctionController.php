@@ -172,8 +172,8 @@ class UpdateAuctionController
 
     private function checkAuthrization($auction, $user)
     {
-        if ($user->cannot('updateAuction', [$user , $auction])) {
-            return $this->GlobalResponse('fail_update', Response::HTTP_UNAUTHORIZED);
+        if ($user->cannot('updateAuction', [$auction , $user])) {
+            return abort($this->GlobalResponse('fail_update', Response::HTTP_UNAUTHORIZED));
         }
     }
 }
