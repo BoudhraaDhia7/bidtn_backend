@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
-use App\Exceptions\GlobalException;
+
 use App\Helpers\AuthHelper;
 use OpenApi\Attributes as OA;
 
-use App\Helpers\QueryConfig;
-use App\Helpers\ResponseHelper;
+
 use App\Models\Auction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -52,44 +51,23 @@ class ShowAuctionController
             ],
         ),
     ]
+
     public function __invoke($id): JsonResponse
-    {   
+    {
         $auction = Auction::with(['product.media', 'product.categories'])->findOrFail($id);
-
-        try {
-            $user = AuthHelper::currentUser();
-
-            if (!$user->isAdmin && $auction->user_id !== $user->id) {
-                throw new GlobalException('product_unauthorized_view' ,  401);
-            }
-            
-            return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, [$auction]);
-        } catch (\Exception $e) {
-            \Log::error('GetLiveAuctionController: Error retrieving auctions' . $e->getMessage());
-            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
-        }
+        $this->checkAuthrization($auction);
+        return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, [$auction]);
     }
+  
 
     /**
-     * @param Request $request
-     * @return QueryConfig
+     * Check if the user is authorized to view the auction
      */
-    private function getAttributes(Request $request): QueryConfig
-    {
-        $paginationParams = $this->getPaginationParams($request);
-
-        $filters = [
-            'category' => $request->input('categories') ?? null,
-            'keyword' => $request->input('keyword') ?? null,
-        ];
-
-        $search = new QueryConfig();
-        $search
-            ->setFilters($filters)
-            ->setPerPage($paginationParams['PER_PAGE'])
-            ->setOrderBy($paginationParams['ORDER_BY'])
-            ->setDirection($paginationParams['DIRECTION'])
-            ->setPaginated($paginationParams['PAGINATION']);
-        return $search;
+    private function checkAuthrization($auction)
+    {   
+        $user = auth()->user();
+        if ($user->cannot('showAuction', [$user, $auction])) {
+            return $this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED);
+        }
     }
 }

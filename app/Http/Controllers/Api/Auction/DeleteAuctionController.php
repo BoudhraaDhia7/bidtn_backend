@@ -3,7 +3,6 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
-use App\Exceptions\GlobalException;
 use App\Helpers\AuthHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,26 +25,24 @@ class DeleteAuctionController
     public function __invoke($id)
     {
         $auction = Auction::findOrfail($id);
+        $user = AuthHelper::currentUser();
+        $this->checkAuthrization($auction, $user);
         try {
-            $user = AuthHelper::currentUser();
-            if (!$auction) {
-                throw new GlobalException('auction_not_found', 404);
-            }
-
-            if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
-                throw new GlobalException('auction_unauthorized', 401);
-            }
-
-            if ($auction->is_confirmed) {
-                throw new GlobalException('auction_allready_confirmed', 401);
-            }
-
-            $user = AuthHelper::currentUser();
             $auction = AuctionRepository::deleteAuction($auction, $user);
-            return $this->GlobalResponse('auctions_created', Response::HTTP_OK, $auction);
+            return $this->GlobalResponse('auctions_deleted', Response::HTTP_OK);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
+        }
+    }
+
+    /**
+     * Check if the user is authorized to delete the auction
+     */
+    private function checkAuthrization($auction)
+    {   $user = auth()->user();
+        if ($user->cannot('deleteAuction', [$user , $auction])) {
+            return $this->GlobalResponse('fail_delete', Response::HTTP_UNAUTHORIZED);
         }
     }
 }

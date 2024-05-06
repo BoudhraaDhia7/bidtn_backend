@@ -77,8 +77,6 @@ class ListAuctionsController
             'keyword' => $request->input('keyword') ?? null,
         ];
 
-  
-
         $search = new QueryConfig();
         $search
             ->setFilters($filters)

@@ -144,19 +144,9 @@ class UpdateAuctionController
     public function __invoke(UpdateAuctionRequest $request , $id)
     {   
         $auction = Auction::FindOrFail($id);
+        $user = AuthHelper::currentUser();
+        $this->checkAuthrization($auction, $user);
         try {
-            $user = AuthHelper::currentUser();
-            if (!$auction) {
-                throw new GlobalException('product_not_found', 404);
-            }
-            
-            if ($auction->user_id !== auth()->user()->id && !$user->isAdmin) {
-                throw new GlobalException('product_unauthorized' , 401);
-            }
-    
-            if($auction->is_confirmed){
-                throw new GlobalException('auction_allready_confirmed' , 401);
-            }
             $validated = $this->getAttributes($request);
             $auction =AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $auction , $user);
             return $this->GlobalResponse('auctions_updated', Response::HTTP_OK, $auction);
@@ -178,6 +168,13 @@ class UpdateAuctionController
             'products' => $request->products
         ];
         
+    }
+
+    private function checkAuthrization($auction, $user)
+    {
+        if ($user->cannot('updateAuction', [$user , $auction])) {
+            return $this->GlobalResponse('fail_update', Response::HTTP_UNAUTHORIZED);
+        }
     }
 }
 
