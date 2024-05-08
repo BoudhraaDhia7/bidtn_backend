@@ -43,7 +43,7 @@ class JoinAuctionController
         $user = auth()->user();
 
         if ($user->cannot('joinAuction', [$auction, $user])) {
-            return abort($this->GlobalResponse('failed_to_join', Response::HTTP_UNAUTHORIZED));
+            abort($this->GlobalResponse('failed_to_join', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Product;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AuctionRepository
 {
@@ -21,22 +22,21 @@ class AuctionRepository
      * @return LengthAwarePaginator|Collection
      */
     public static function index(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
-    {   
+    {
         $auctionQuery = Auction::with(['product.media', 'product.categories']);
-        
+
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
-        
         if (!$user->isAdmin) {
             $auctionQuery->where('user_id', $user->id);
         }
-        
+
         $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
-        
+
         if ($queryConfig->isPaginated()) {
             return $auctionQuery->paginate($queryConfig->getPerPage());
         }
-        
+
         return $auctionQuery->get();
     }
 
@@ -49,8 +49,8 @@ class AuctionRepository
      */
 
     //public static function updateProduct($id, $name, $category, $description, array $newImageArray, array $deletedImages, $user)
-    public static function updateAuction($title, $description, $startingPrice, $startDate, $startingUserNumber, $products, $auction , $user)
-    {   
+    public static function updateAuction($title, $description, $startingPrice, $startDate, $startingUserNumber, $products, $auction, $user)
+    {
         DB::beginTransaction();
 
         $auction->update([
@@ -61,20 +61,17 @@ class AuctionRepository
             'startingUserNumber' => $startingUserNumber,
         ]);
 
-
-        foreach($products as $product){
+        foreach ($products as $product) {
             $id = $product['id'];
             $name = $product['name'];
             $categories = $product['categories'];
             $description = $product['description'];
             $newImageArray = isset($product['files']) ? $product['files'] : [];
             $deletedImages = isset($product['deletedMedia']) ? $product['deletedMedia'] : [];
-             $id != 0 ? ProductRepository::updateProduct($id, $name, $categories, $description, $newImageArray, $deletedImages, $user):
-             ProductRepository::storeProduct($name, $description ,$categories, $newImageArray, $user, $auction);
+            $id != 0 ? ProductRepository::updateProduct($id, $name, $categories, $description, $newImageArray, $deletedImages, $user) : ProductRepository::storeProduct($name, $description, $categories, $newImageArray, $user, $auction);
         }
         DB::commit();
         return $auction;
-
     }
 
     /**
@@ -97,11 +94,6 @@ class AuctionRepository
                 'starting_user_number' => $startingUserNumber,
                 'user_id' => $user->id,
             ]);
-
-            if (!$auction) {
-                DB::rollback();
-                throw new GlobalException('Auction creation failed', 400);
-            }
 
             self::processProducts($products, $user, $auction);
             DB::commit();
@@ -170,17 +162,17 @@ class AuctionRepository
      * @return Auction
      */
     public static function joinAuction($auction, $user)
-    {   
+    {
         DB::beginTransaction();
-        
-        $joinTransaction =AuctionParticipant::create([
+
+        $joinTransaction = AuctionParticipant::create([
             'auction_id' => $auction->id,
             'user_id' => $user->id,
             'is_paid' => true,
             'paid_amount' => $auction->starting_price,
         ]);
 
-        if(!$joinTransaction){
+        if (!$joinTransaction) {
             DB::rollback();
             throw new GlobalException('Auction join failed', 400);
         }
@@ -190,5 +182,48 @@ class AuctionRepository
 
         DB::commit();
         return $auction;
+    }
+
+    /**
+     * Refund user for a auction record in the database.
+     * @param Auction $auction
+     * @param $user
+     * @return void
+     */
+    public static function refundUsers()
+    {
+        // Current Unix timestamp
+        $currentTimestamp = now()->timestamp;
+
+        // Get all auctions where start date has passed but not confirmed and not enough participants
+        $auctions = Auction::where('start_date', '<=', $currentTimestamp)->where('is_confirmed', true)->where('is_finished', false)->get();
+
+        foreach ($auctions as $auction) {
+            $participantsCount = AuctionParticipant::where('auction_id', $auction->id)
+                ->where('is_refunded', false)
+                ->count();
+
+            if ($participantsCount < $auction->starting_user_number) {
+                $participants = AuctionParticipant::where('auction_id', $auction->id)
+                    ->where('is_refunded', false)
+                    ->get();
+
+                foreach ($participants as $participant) {
+                    DB::transaction(function () use ($participant) {
+                        $user = $participant->user;
+                        if ($user) {
+                            $user->balance += $participant->paid_amount;
+                            $user->save();
+
+                            $participant->is_refunded = true;
+                            $participant->should_refund = true;
+                            $participant->save();
+
+                            Log::info("Refunded {$participant->paid_amount} to user {$user->id} for auction {$participant->auction_id}");
+                        }
+                    });
+                }
+            }
+        }
     }
 }

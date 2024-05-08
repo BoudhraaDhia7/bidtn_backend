@@ -145,7 +145,7 @@ class UpdateAuctionController
     {   
         $auction = Auction::FindOrFail($id);
         $user = AuthHelper::currentUser();
-        $this->checkAuthrization($auction, $user);
+        $this->checkAuthrization($auction);
         try {
             $validated = $this->getAttributes($request);
             $auction =AuctionRepository::updateAuction($validated['title'], $validated['description'],$validated['starting_price'],$validated['start_date'],$validated['starting_user_number'],$validated['products'], $auction , $user);
@@ -170,10 +170,11 @@ class UpdateAuctionController
         
     }
 
-    private function checkAuthrization($auction, $user)
-    {
+    private function checkAuthrization($auction)
+    {   
+        $user = auth()->user();
         if ($user->cannot('updateAuction', [$auction , $user])) {
-            return abort($this->GlobalResponse('fail_update', Response::HTTP_UNAUTHORIZED));
+             abort($this->GlobalResponse('fail_update', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

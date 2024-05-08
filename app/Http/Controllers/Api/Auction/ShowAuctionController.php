@@ -67,7 +67,7 @@ class ShowAuctionController
     {   
         $user = auth()->user();
         if ($user->cannot('showAuction', [$auction, $user])) {
-            return abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
+            abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

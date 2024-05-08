@@ -43,7 +43,7 @@ class DeleteAuctionController
         $user = auth()->user();
 
         if ($user->cannot('deleteAuction', [$auction, $user])) {
-            return abort($this->GlobalResponse('fail_delete', Response::HTTP_UNAUTHORIZED));
+            abort($this->GlobalResponse('fail_delete', Response::HTTP_UNAUTHORIZED));
         }
     }
 }
