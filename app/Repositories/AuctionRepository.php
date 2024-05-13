@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Events\BidPlaced;
+use App\Events\JoinAuction;
 use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
 use App\Models\Auction;
@@ -27,9 +29,9 @@ class AuctionRepository
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
-        if (!$user->isAdmin) {
-            $auctionQuery->where('user_id', $user->id);
-        }
+        // if (!$user->isAdmin) {
+        //     $auctionQuery->where('user_id', $user->id);
+        // }
 
         $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
 
@@ -161,9 +163,17 @@ class AuctionRepository
      * @param $user
      * @return Auction
      */
-    public static function joinAuction($auction, $user)
+    public function joinAuction($auction, $user)
     {
         DB::beginTransaction();
+
+        $alreadyJoined = AuctionParticipant::where('auction_id', $auction->id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if ($alreadyJoined) {
+            return;
+        }
 
         $joinTransaction = AuctionParticipant::create([
             'auction_id' => $auction->id,
@@ -179,15 +189,12 @@ class AuctionRepository
 
         $user->balance -= $auction->starting_price;
         $user->save();
-
         DB::commit();
-        return $auction;
+       
     }
 
     /**
      * Refund user for a auction record in the database.
-     * @param Auction $auction
-     * @param $user
      * @return void
      */
     public static function refundUsers()
@@ -225,5 +232,81 @@ class AuctionRepository
                 }
             }
         }
+    }
+
+    /**
+     *
+     * @param Auction $auction
+     * @return void
+     */
+    public static function startAuctions()
+    {
+        $currentTimestamp = now()->timestamp;
+
+        $auctions = Auction::where('start_date', '<=', $currentTimestamp)->where('is_confirmed', true)->where('is_finished', false)->get();
+
+        foreach ($auctions as $auction) {
+            $participantsCount = AuctionParticipant::where('auction_id', $auction->id)
+                ->where('is_refunded', false)
+                ->count();
+
+            if ($participantsCount >= $auction->starting_user_number) {
+                $auction->is_started = true;
+                $auction->save();
+                Log::info("Auction {$auction->id} has started with {$participantsCount} participants");
+            } else {
+                Log::info("Auction {$auction->id} could not start because it requires {$auction->starting_user_number} participants but only {$participantsCount} have joined.");
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    public static function endAuctions()
+    {
+    }
+
+    public static function bidOnAuction($auction, $bidAmount, $user)
+    {
+        DB::beginTransaction();
+
+        $auction->transactions()->create([
+            'amount' => $bidAmount,
+            'user_id' => $user->id,
+            'type' => 'bid'
+        ]);
+
+        $user->balance -= $bidAmount;
+        $user->save();
+
+        broadcast(new BidPlaced($auction->id, $user->id, (int)$bidAmount, $user->last_name, $user->balance));
+        DB::commit();
+    }
+
+    /**
+     * Retrieves the current state of the specified auction.
+     *
+     * @param Auction $auction The auction to retrieve the state for.
+     * @param User $authUser The authenticated user.
+     * @return array
+     */
+    public static function showAuctionCurrentState($auction, $user)
+    {
+
+        $highestBidTransaction = $auction->transactions()->where('type', 'bid')->orderBy('amount', 'desc')->first();
+
+        $highestBid = 0;
+        $highestBidderName = '';
+
+        if ($highestBidTransaction) {
+            $highestBid = $highestBidTransaction->amount;
+            $highestBidder = $highestBidTransaction->user;
+            $highestBidderName = $highestBidder ? $highestBidder->last_name : '';
+            broadcast(new JoinAuction($auction->id, $highestBid, $highestBidderName, $user->balance));
+        }else{
+            broadcast(new JoinAuction($auction->id, 0, '', $user->balance));
+        }
+       
     }
 }

@@ -22,12 +22,18 @@ class JoinAuctionController
 
     use GlobalResponse;
 
+    private $auctionRepository;
+    public function __construct(AuctionRepository $auctionRepository)
+    {
+        $this->auctionRepository = $auctionRepository;
+    }
+
     public function __invoke($id)
     {
         $auction = Auction::findOrfail($id);
         $this->checkAuthrization($auction);
         try {
-            AuctionRepository::joinAuction($auction, auth()->user());
+            $this->auctionRepository->joinAuction($auction, auth()->user());
             return $this->GlobalResponse('auctions_joined', Response::HTTP_OK);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
