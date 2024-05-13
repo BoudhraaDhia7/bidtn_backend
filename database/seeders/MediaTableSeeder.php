@@ -16,20 +16,63 @@ class MediaTableSeeder extends Seeder
      */
     public function run()
     {
-        $products = Product::all();
-        $base_url = 'https://picsum.photos/200/300?random=';
+        Media::create([
+            'model_id' => 1,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/mbZs7gD/Oppo1.webp',
+        ]);
 
-        foreach ($products as $product) {
-            for ($j = 1; $j <= 2; $j++) {
-                Media::create([
-                    'model_type' => 'App\Models\Product',
-                    'model_id' => $product->id,
-                    'file_name' => "Image_{$j}_Product_{$product->id}.jpg",
-                    'file_path' => "{$base_url}{$product->id}$j", 
-                    'file_type' => 'image/jpeg'
-                ]);
-            }
-        }
+        Media::create([
+            'model_id' => 2,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/b5d7X8c/xiaomi1.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 2,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/1T5JSbM/xiami2.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 2,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/CWvXL2f/xiaomi3-webp.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 3,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/FxDF6HM/ps41.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 3,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/QkYVnP9/ps42.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 4,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/yQGcb3W/dell1.webp',
+        ]);
+
+        Media::create([
+            'model_id' => 4,
+            'model_type' => 'App\Models\Product',
+            'file_type' => 'image/webp',
+            'file_path' => 'https://i.ibb.co/4j023tg/dell2.webp',
+        ]);
+
+     
     }
 
 }

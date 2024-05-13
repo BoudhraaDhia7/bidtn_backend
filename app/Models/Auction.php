@@ -82,4 +82,21 @@ class Auction extends Model
     {
         return $this->hasMany(AuctionParticipant::class, 'auction_id');
     }
+
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class , 'auction_id');
+    }
+
+    //function that return if a given user id is a participant in the auction
+    public function isParticipant($user_id)
+    {   
+        return $this->participants()->where('user_id', $user_id)->exists();
+    }
+
+     //check if the given bid ammount is the highest on a given auction
+    public function isHighestBid($bidAmount)
+    {   
+        return $this->transactions()->max('amount') < $bidAmount;
+    }
 }

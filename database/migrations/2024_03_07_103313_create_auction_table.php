@@ -16,11 +16,13 @@ return new class extends Migration
         Schema::create('auctions', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('description');
+            $table->longText('description');
             $table->integer('starting_price');
             $table->unsignedBigInteger('user_id');
             $table->boolean('is_finished')->default(false);
             $table->boolean('is_confirmed')->default(false);
+            $table->boolean('is_started')->default(false);
+            $table->integer('current_bid')->default(0);
             $table->integer('starting_user_number')->default(7);
             $table->unsignedBigInteger('end_date')->nullable();
             $table->unsignedBigInteger('start_date')->default(time());
