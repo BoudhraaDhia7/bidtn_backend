@@ -34,11 +34,16 @@ class AuctionPolicy
     }
 
     public function showAuction(User $user, Auction $auction, $id)
-    {
+    {   
         if ($user->role_id === 1) {
             return true;
         }
 
         return $user->id === $auction->user_id;
+    }
+
+    public function joinAuction(User $user, Auction $auction)
+    {   
+        return $user->balance > $auction->starting_price && $auction->is_finished === 0 && $auction->is_confirmed === 1;
     }
 }

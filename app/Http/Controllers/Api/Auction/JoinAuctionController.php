@@ -11,7 +11,7 @@ use App\Helpers\ResponseHelper;
 use App\Models\Auction;
 use App\Repositories\AuctionRepository;
 
-class DeleteAuctionController
+class JoinAuctionController
 {
     /**
      * Store a new auction in the database.
@@ -27,8 +27,8 @@ class DeleteAuctionController
         $auction = Auction::findOrfail($id);
         $this->checkAuthrization($auction);
         try {
-            $auction = AuctionRepository::deleteAuction($auction);
-            return $this->GlobalResponse('auctions_deleted', Response::HTTP_OK);
+            AuctionRepository::joinAuction($auction, auth()->user());
+            return $this->GlobalResponse('auctions_joined', Response::HTTP_OK);
         } catch (\Exception $e) {
             \Log::error('AuctionStoreController: Error retrieving auctions' . $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
@@ -39,11 +39,11 @@ class DeleteAuctionController
      * Check if the user is authorized to delete the auction
      */
     private function checkAuthrization($auction)
-    {
+    {  
         $user = auth()->user();
 
-        if ($user->cannot('deleteAuction', [$auction, $user])) {
-            abort($this->GlobalResponse('fail_delete', Response::HTTP_UNAUTHORIZED));
+        if ($user->cannot('joinAuction', [$auction, $user])) {
+            abort($this->GlobalResponse('failed_to_join', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

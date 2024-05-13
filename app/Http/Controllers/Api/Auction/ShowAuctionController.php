@@ -66,8 +66,8 @@ class ShowAuctionController
     private function checkAuthrization($auction)
     {   
         $user = auth()->user();
-        if ($user->cannot('showAuction', [$user, $auction])) {
-            return $this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED);
+        if ($user->cannot('showAuction', [$auction, $user])) {
+            abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

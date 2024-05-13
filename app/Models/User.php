@@ -134,6 +134,14 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTIdentifier()
     {
         return $this->getKey();
+    }   
+
+    /**
+     * Get the auctions that the user has participated in.
+     */
+    public function auctionParticipations(): HasMany
+    {
+        return $this->hasMany(AuctionParticipant::class, 'user_id');
     }
 
     /**
