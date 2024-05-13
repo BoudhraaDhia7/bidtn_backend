@@ -1,4 +1,8 @@
 <?php
+
+use App\Events\BidPlaced;
+use App\Events\JoinAuction;
+use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\Authentification\LogoutUserController;
@@ -24,10 +28,10 @@ use App\Http\Controllers\Api\Jetons\CreateJetonPackController;
 
 use App\Http\Controllers\Api\Auction\CreateAuctionController;
 use App\Http\Controllers\Api\Auction\DeleteAuctionController;
-use App\Http\Controllers\Api\Auction\GetAuctionsController;
 use App\Http\Controllers\Api\Auction\JoinAuctionController;
 use App\Http\Controllers\Api\Auction\ListAuctionsController;
 use App\Http\Controllers\Api\Auction\ShowAuctionController;
+use App\Http\Controllers\Api\Auction\ShowAuctionCurrentStateController;
 use App\Http\Controllers\Api\Auction\UpdateAuctionController;
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
 
@@ -95,6 +99,8 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::post('/update/{id}', UpdateAuctionController::class)->name('update_auction');
     Route::delete('/{id}', DeleteAuctionController::class)->name('delete_auction');
     Route::post('/join/{id}', JoinAuctionController::class)->name('join_auction');
+    Route::post('/bid/{id}', BidOnAuctionController::class)->name('bid_auction');
+    Route::Post('/current-state/{id}', ShowAuctionCurrentStateController::class)->name('state_auction');
 });
 
 Route::group(['prefix' => 'auction'], function () {
@@ -103,4 +109,11 @@ Route::group(['prefix' => 'auction'], function () {
 
 Route::group(['prefix' => 'categories'] , function(){
     Route::get('/',GetCategoriesController::class)->name('get_all_Categories');
+});
+
+Route::get('/fire', function () {
+    $auctionData = ['id' => 2, 'status' => 'active']; 
+    event(new JoinAuction(2, 200 , '1000', 1000));
+
+    return response()->json(['message' => 'Auction event fired!']);
 });

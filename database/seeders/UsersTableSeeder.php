@@ -25,13 +25,31 @@ class UsersTableSeeder extends Seeder
                 'email' => 'admin@test.com',
                 'role_id' => 1, // 'Admin' role
                 'password' => Hash::make('password'),
+                'balance' => 9000,
             ],
             [
                 'first_name' => 'user',
-                'last_name' => 'user',
+                'last_name' => 'user1',
                 'email' => 'user@test.com',
                 'role_id' => 2, // 'User' role
                 'password' => Hash::make('password'),
+                'balance' => 9000,
+            ],
+            [
+                'first_name' => 'user',
+                'last_name' => 'user2',
+                'email' => 'user2@test.com',
+                'role_id' => 2, // 'User' role
+                'password' => Hash::make('password'),
+                'balance' => 9000,
+            ],
+            [
+                'first_name' => 'user',
+                'last_name' => 'user3',
+                'email' => 'user3@test.com',
+                'role_id' => 2, // 'User' role
+                'password' => Hash::make('password'),
+                'balance' => 9000,
             ],
         ]);
         
