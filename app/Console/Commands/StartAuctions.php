@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Repositories\AuctionRepository;
 use Illuminate\Console\Command;
 
-class startAuctions extends Command
+class StartAuctions extends Command
 {
     /**
      * The name and signature of the console command.
