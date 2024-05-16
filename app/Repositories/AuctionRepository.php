@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Events\BidPlaced;
+use App\Events\FinishAuction;
 use App\Events\JoinAuction;
+use App\Events\StartAuction;
 use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
 use App\Models\Auction;
@@ -309,4 +311,22 @@ class AuctionRepository
         }
        
     }
+
+    public static function startAuction($auction){
+        $auction->is_started = true;
+        $auction->save();
+        broadcast(new StartAuction($auction->id));
+    }
+
+    public static function auctionWinner($auction){
+        $highestBidTransaction = $auction->transactions()->where('type', 'bid')->orderBy('amount', 'desc')->first();
+        $highestBidder = $highestBidTransaction->user;
+        $auction->winner_id = $highestBidder->id;
+        $auction->is_finished = true;
+        $auction->finnished_at = now()->timestamp;
+        $auction->save();
+        broadcast(new FinishAuction($auction->id, $highestBidder->id));
+    }
+    
+
 }

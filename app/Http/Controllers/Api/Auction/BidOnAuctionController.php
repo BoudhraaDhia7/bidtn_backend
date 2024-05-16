@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auction;
 
+use App\Events\ResetTimerAuction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BidRequest;
 use App\Models\Auction;
@@ -18,8 +19,9 @@ class BidOnAuctionController extends Controller
         $auction = Auction::findOrFail($id);
         $params = $this->getAttributes($request);
         $this->checkAuthrization($auction , $params['bidAmount']);
-        
+        $auctionBidCount = $auction->transactions()->count();
         try{
+            $auctionBidCount === 0 ? AuctionRepository::startAuction($auction) : broadcast(new ResetTimerAuction($auction->id));
             AuctionRepository::bidOnAuction($auction, $params['bidAmount'], auth()->user());
             return $this->GlobalResponse('success_bid', Response::HTTP_OK);
         }

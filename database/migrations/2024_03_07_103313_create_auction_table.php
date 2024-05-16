@@ -24,6 +24,8 @@ return new class extends Migration
             $table->boolean('is_started')->default(false);
             $table->integer('current_bid')->default(0);
             $table->integer('starting_user_number')->default(7);
+            $table->integer('winner_id')->nullable();
+            $table->bigInteger('finnished_at')->nullable();
             $table->unsignedBigInteger('end_date')->nullable();
             $table->unsignedBigInteger('start_date')->default(time());
             $table->unsignedBigInteger('created_at')->default(time());
