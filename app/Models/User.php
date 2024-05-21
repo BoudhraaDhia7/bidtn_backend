@@ -134,7 +134,7 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTIdentifier()
     {
         return $this->getKey();
-    }   
+    }
 
     /**
      * Get the auctions that the user has participated in.
@@ -146,7 +146,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function transactions(): HasMany
     {
-        return $this->hasMany(Transaction::class , 'user_id');
+        return $this->hasMany(Transaction::class, 'user_id');
     }
 
     /**
@@ -159,8 +159,10 @@ class User extends Authenticatable implements JWTSubject
                 'first_name' => $this->first_name,
                 'last_name' => $this->last_name,
                 'email' => $this->email,
-                'balance' => $this->balance 
-            ]
+                'balance' => $this->balance,
+                'roleId' => $this->role_id,
+                'image' => $this->media()->first() ? $this->media()->first()->file_path : null,
+            ],
         ];
     }
 }

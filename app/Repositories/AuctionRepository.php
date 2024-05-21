@@ -27,13 +27,34 @@ class AuctionRepository
      */
     public static function index(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories']);
+        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user']);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
-        // if (!$user->isAdmin) {
-        //     $auctionQuery->where('user_id', $user->id);
-        // }
+        if (!$user->isAdmin) {
+            $auctionQuery->where('user_id', $user->id);
+        }
+
+        $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+
+        if ($queryConfig->isPaginated()) {
+            return $auctionQuery->paginate($queryConfig->getPerPage());
+        }
+
+        return $auctionQuery->get();
+    }
+
+    /**
+     * Get all auctions from the database.
+     *
+     * @param QueryConfig $queryConfig
+     * @return LengthAwarePaginator|Collection
+     */
+    public static function guestIndex(QueryConfig $queryConfig): LengthAwarePaginator|Collection
+    {
+        $auctionQuery = Auction::with(['product.media', 'product.categories']);
+
+        Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
         $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
 
@@ -192,7 +213,6 @@ class AuctionRepository
         $user->balance -= $auction->starting_price;
         $user->save();
         DB::commit();
-       
     }
 
     /**
@@ -276,13 +296,13 @@ class AuctionRepository
         $auction->transactions()->create([
             'amount' => $bidAmount,
             'user_id' => $user->id,
-            'type' => 'bid'
+            'type' => 'bid',
         ]);
 
         $user->balance -= $bidAmount;
         $user->save();
 
-        broadcast(new BidPlaced($auction->id, $user->id, (int)$bidAmount, $user->last_name, $user->balance));
+        broadcast(new BidPlaced($auction->id, $user->id, (int) $bidAmount, $user->last_name, $user->balance));
         DB::commit();
     }
 
@@ -295,7 +315,6 @@ class AuctionRepository
      */
     public static function showAuctionCurrentState($auction, $user)
     {
-
         $highestBidTransaction = $auction->transactions()->where('type', 'bid')->orderBy('amount', 'desc')->first();
 
         $highestBid = 0;
@@ -306,19 +325,20 @@ class AuctionRepository
             $highestBidder = $highestBidTransaction->user;
             $highestBidderName = $highestBidder ? $highestBidder->last_name : '';
             broadcast(new JoinAuction($auction->id, $highestBid, $highestBidderName, $user->balance));
-        }else{
+        } else {
             broadcast(new JoinAuction($auction->id, 0, '', $user->balance));
         }
-       
     }
 
-    public static function startAuction($auction){
+    public static function startAuction($auction)
+    {
         $auction->is_started = true;
         $auction->save();
         broadcast(new StartAuction($auction->id));
     }
 
-    public static function auctionWinner($auction){
+    public static function auctionWinner($auction)
+    {
         $highestBidTransaction = $auction->transactions()->where('type', 'bid')->orderBy('amount', 'desc')->first();
         $highestBidder = $highestBidTransaction->user;
         $auction->winner_id = $highestBidder->id;
@@ -327,6 +347,16 @@ class AuctionRepository
         $auction->save();
         broadcast(new FinishAuction($auction->id, $highestBidder->id));
     }
-    
 
+    public static function rejectAuction($auction)
+    {
+        $auction->is_rejected = true;
+        $auction->save();
+    }
+
+    public static function confirmAuction($auction)
+    {
+        $auction->is_confirmed = true;
+        $auction->save();
+    }
 }

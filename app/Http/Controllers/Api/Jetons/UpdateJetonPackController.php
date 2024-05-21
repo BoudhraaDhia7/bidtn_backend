@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Api\Jetons;
 
+use App\Http\Controllers\Controller;
 use App\Helpers\ResponseHelper;
 use OpenApi\Attributes as OA;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 use App\Repositories\JetonRepository;
-use App\Http\Requests\CreateJetonPackRequest;
+use App\Http\Requests\UpdateJetonPackRequest;
 use App\Models\JetonPack;
 use App\Traits\GlobalResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-class CreateJetonPackController extends Controller
+class UpdateJetonPackController extends Controller
 {   
+
     use GlobalResponse;
-    /**
+      /**
      * Create a new jeton pack.
      *
      * This endpoint is responsible for creating a new jeton pack based on the provided details in the request body.
@@ -28,12 +29,12 @@ class CreateJetonPackController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     #[OA\Post(
-        path: "/api/jeton-packs",
+        path: "/api/update-jeton-packs/:id",
         tags: ["Jetons"],
         summary: "Create a new jeton pack",
         operationId: "createJetonPack",
         requestBody: new OA\RequestBody(
-            description: "Jeton pack details",
+            description: "Update jeton pack details",
             required: true,
             content: new OA\MediaType(
                 mediaType: "application/json",
@@ -50,7 +51,7 @@ class CreateJetonPackController extends Controller
         responses: [
             new OA\Response(
                 response: Response::HTTP_CREATED,
-                description: "Jeton pack created successfully.",
+                description: "Jeton pack updated successfully.",
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: "id", type: "integer", description: "The ID of the created jeton pack."),
@@ -70,20 +71,21 @@ class CreateJetonPackController extends Controller
             )
         ]
     )]
-    public function __invoke(CreateJetonPackRequest $request): JsonResponse
+    public function __invoke(UpdateJetonPackRequest $request, $id): JsonResponse
     {   
         $this->checkAuthrization();
+        $jetonPack = JetonPack::findOrfail($id);
         try {
             $validated = $this->getAttributes($request);
-            $response = JetonRepository::createJetonPack($validated['name'], $validated['description'], $validated['price'], $validated['amount']);
-            return $this->GlobalResponse('jeton_pack_created', Response::HTTP_OK, $response);
+            $response = JetonRepository::updateJetonPack($validated['name'], $validated['description'], $validated['price'], $validated['amount'], $jetonPack);
+            return $this->GlobalResponse('jeton_pack_updated', Response::HTTP_OK, $response);
         } catch (\Exception $e) {
-            Log::error('CreateJetonPackController: Error creating jeton pack'. $e->getMessage());
+            Log::error('UpdateJetonPackController: Error update jeton pack'. $e->getMessage());
             return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode(500));
         }
     }
 
-    private function getAttributes(CreateJetonPackRequest $request): array
+    private function getAttributes(UpdateJetonPackRequest $request): array
     {
         return [
             'name' => $request->name,
@@ -92,13 +94,13 @@ class CreateJetonPackController extends Controller
             'price' => $request->price,
         ];
     }
-
+    
     private function checkAuthrization()
     {
         $user = auth()->user();
 
-        if ($user->cannot('createJetonPack' , JetonPack::class)) {
-            abort($this->GlobalResponse('failed_to_create_pack', Response::HTTP_UNAUTHORIZED));
+        if ($user->cannot('updateJetonPack' , JetonPack::class)) {
+            abort($this->GlobalResponse('failed_to_update_pack', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

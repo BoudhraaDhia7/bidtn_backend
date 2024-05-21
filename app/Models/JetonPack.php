@@ -11,7 +11,7 @@ class JetonPack extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','Description','price', 'amount', 'created_at', 'updated_at', 'deleted_at'];
+    protected $fillable = ['name','description','price', 'amount', 'created_at', 'updated_at', 'deleted_at'];
 
     public $timestamps = false;
 

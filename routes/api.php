@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\BidPlaced;
 use App\Events\JoinAuction;
 use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use Illuminate\Support\Facades\Route;
@@ -31,11 +30,17 @@ use App\Http\Controllers\Api\Auction\DeleteAuctionController;
 use App\Http\Controllers\Api\Auction\EndAuctionController;
 use App\Http\Controllers\Api\Auction\JoinAuctionController;
 use App\Http\Controllers\Api\Auction\ListAuctionsController;
+use App\Http\Controllers\Api\Auction\ListGuestAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionCurrentStateController;
 use App\Http\Controllers\Api\Auction\UpdateAuctionController;
-use App\Http\Controllers\Api\Categories\GetCategoriesController;
+use App\Http\Controllers\Api\Auction\ConfirmAuctionController;
+use App\Http\Controllers\Api\Auction\RejectAuctionController;
 
+use App\Http\Controllers\Api\Categories\GetCategoriesController;
+use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
+use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
+use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,7 +53,6 @@ use App\Http\Controllers\Api\Categories\GetCategoriesController;
 |
 */
 
-//TODO ----------- ADD DB TRANSACTION TO SOME ROUTES
 
 //User Auth routes group
 Route::group(['prefix' => 'auth'], function () {
@@ -82,6 +86,9 @@ Route::group(['prefix' => 'password'], function () {
 Route::group(['prefix' => 'jetons', 'middleware' => ['user.auth']], function () {
     Route::get('/', ListJetonPackController::class)->name('get_all_jetons');
     Route::post('/create', CreateJetonPackController::class)->name('create_jetons_pack');
+    Route::post('/update/{id}', UpdateJetonPackController::class)->name('update_jetons_pack');
+    Route::delete('/{id}', DeleteJetonPackController::class)->name('delete_jetons_pack');
+    Route::get('/{id}', ShowJetonPackController::class)->name('get_jetons_pack');
 });
 
 //Product routes
@@ -103,19 +110,14 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::post('/bid/{id}', BidOnAuctionController::class)->name('bid_auction');
     Route::Post('/current-state/{id}', ShowAuctionCurrentStateController::class)->name('state_auction');
     Route::Post('/finish-auction/{id}', EndAuctionController::class)->name('end_auction');
-});
-
-Route::group(['prefix' => 'auction'], function () {
-    Route::get('/', ListAuctionsController::class)->name('get_all_auctions');
+    Route::Post('/confirm-auction/{id}' , ConfirmAuctionController::class)->name('confirm_auction');
+    Route::Post('/reject-auction/{id}' , RejectAuctionController::class)->name('reject_auction');
 });
 
 Route::group(['prefix' => 'categories'] , function(){
     Route::get('/',GetCategoriesController::class)->name('get_all_Categories');
 });
 
-Route::get('/fire', function () {
-    $auctionData = ['id' => 2, 'status' => 'active']; 
-    event(new JoinAuction(2, 200 , '1000', 1000));
-
-    return response()->json(['message' => 'Auction event fired!']);
+Route::group(['prefix' => 'guest'], function () {
+    Route::get('/auction', ListGuestAuctionController::class)->name('get_guest_all_auctions');
 });
