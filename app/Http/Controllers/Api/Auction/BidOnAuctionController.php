@@ -37,11 +37,12 @@ class BidOnAuctionController extends Controller
         ];
     }
 
-    private function checkAuthrization($auction, $bidAmount)
+    private function checkAuthrization($auction,$bidAmount )
     {   
-        // $user = auth()->user();
-        // if ($user->cannot('bidOnAuction', [$auction , $bidAmount])) {
-        //     abort($this->GlobalResponse('fail_bid', Response::HTTP_UNAUTHORIZED));
-        // }
+
+        $user = auth()->user();
+        if ($user->cannot('bidOnAuction', [$auction , $bidAmount])) {
+            abort($this->GlobalResponse('fail_bid', Response::HTTP_UNAUTHORIZED));
+        }
     }
 }
