@@ -4,9 +4,8 @@ namespace App\Repositories;
 use App\Exceptions\GlobalException;
 use App\Models\JetonPack;
 
-
 class JetonRepository
-{   
+{
     /**
      * Create a new jeton pack record in the database.
      *
@@ -14,19 +13,14 @@ class JetonRepository
      * @return array
      * @throws Exception if the jeton pack creation fails
      */
-    public static function createJetonPack($validated): array
-    {   
-        $attributesToUpdate = ['name', 'price', 'amount'];
-        
-        $filteredAttributes = array_intersect_key($validated, array_flip($attributesToUpdate));
-    
-        $jetonPack = JetonPack::create($filteredAttributes);
-    
-        if (!$jetonPack) {
-            throw new GlobalException('jeton_pack_creation_failed');
-        }
-    
-        return $jetonPack->toArray();
+    public static function createJetonPack($name, $description, $price, $amount): void
+    {
+        JetonPack::create([
+            'name' => $name,
+            'description' => $description,
+            'price' => $price,
+            'amount' => $amount,
+        ]);
     }
 
     /**
@@ -36,14 +30,13 @@ class JetonRepository
     public static function getJetonPacks(): array
     {
         $jetonPacks = JetonPack::with('media')->get();
-        
+
         if ($jetonPacks->isEmpty()) {
             throw new GlobalException('jeton_pack_not_found', 404);
         }
-    
+
         return $jetonPacks->toArray();
     }
-    
 
     /**
      * Get a jeton pack from the database.
@@ -67,19 +60,17 @@ class JetonRepository
      * @return array
      * @throws Exception if the jeton pack update fails
      */
-    public static function updateJetonPack($id, $validated): array
-    {
-        $jetonPack = JetonPack::find($id);
-        if (!$jetonPack) {
-            throw new GlobalException('jeton_pack_not_found', 404);
-        }
-        $attributesToUpdate = ['name', 'price', 'amount'];
-        foreach ($attributesToUpdate as $attribute) {
-            if (isset($validated[$attribute])) {
-                $jetonPack->{$attribute} = $validated[$attribute];
-            }
-        }
+    public static function updateJetonPack($name, $description, $price, $amount, $jetonPack): void
+    {   
+        $jetonPack->name = $name;
+        $jetonPack->description = $description;
+        $jetonPack->price = $price;
+        $jetonPack->amount = $amount;
         $jetonPack->save();
-        return $jetonPack->toArray();
+    }
+
+    public static function deleteJetonPack($jetonPack): void
+    {
+        $jetonPack->delete();
     }
 }

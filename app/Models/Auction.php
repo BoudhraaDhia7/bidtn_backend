@@ -21,6 +21,8 @@ class Auction extends Model
 
     protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
 
+    protected $appends = ['added_by'];
+
     public static function boot()
     {
         parent::boot();
@@ -45,8 +47,6 @@ class Auction extends Model
         return $this->morphMany(Media::class, 'model');
     }
 
-    //relationship with user
-    //TODO -  Add miore fillter
     public function scopeFilterByKeyword($query, $keyword)
     {
         if ($keyword !== null) {
@@ -85,18 +85,28 @@ class Auction extends Model
 
     public function transactions(): HasMany
     {
-        return $this->hasMany(Transaction::class , 'auction_id');
+        return $this->hasMany(Transaction::class, 'auction_id');
     }
 
     //function that return if a given user id is a participant in the auction
     public function isParticipant($user_id)
-    {   
+    {
         return $this->participants()->where('user_id', $user_id)->exists();
     }
 
-     //check if the given bid ammount is the highest on a given auction
+    //check if the given bid ammount is the highest on a given auction
     public function isHighestBid($bidAmount)
-    {   
+    {
         return $this->transactions()->max('amount') < $bidAmount;
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function getAddedByAttribute()
+    {
+        return $this->user ? $this->user->first_name . ' ' . $this->user->last_name : null;
     }
 }

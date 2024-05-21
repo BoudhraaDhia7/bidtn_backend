@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateJetonPackRequest extends FormRequest
+class UpdateJetonPackRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,7 +23,7 @@ class CreateJetonPackRequest extends FormRequest
     {
         return [
             'name' => 'required|string',
-            'description' => 'required|string', 
+            'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'amount' => 'required|numeric',
         ];
