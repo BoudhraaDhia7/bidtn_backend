@@ -6,8 +6,10 @@ namespace App\Providers;
 
 use App\Models\Auction;
 use App\Models\JetonPack;
+use App\Models\JetonTransaction;
 use App\Policies\AuctionPolicy;
 use App\Policies\JetonPackPolicy;
+use App\Policies\JetonTransactionPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -21,6 +23,7 @@ class AuthServiceProvider extends ServiceProvider
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
         Auction::class => AuctionPolicy::class,
         JetonPack::class => JetonPackPolicy::class,
+        JetonTransaction::class => JetonTransactionPolicy::class,
     ];
 
     /**

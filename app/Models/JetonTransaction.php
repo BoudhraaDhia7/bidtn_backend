@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\ApplyQueryScopes;
+use App\Traits\PaginationParams;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,11 +11,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class JetonTransaction extends Model
 {
     use HasFactory;
+    use ApplyQueryScopes, PaginationParams;
 
-    protected $fillable = ['user_id', 'jeton_pack_id','amount','created_at'];
+    protected $fillable = ['user_id', 'jeton_pack_id','amount','transaction_type','created_at'];
 
     public $timestamps = false;
     
+    protected $appends = ['user_code'];
+
     public static function boot()
     {
         parent::boot();
@@ -21,6 +26,11 @@ class JetonTransaction extends Model
         static::creating(function ($model) {
             $model->created_at = time();
         });
+    }
+
+    public function getUserCodeAttribute()
+    {
+        return "#" . $this->user->id . "_" . $this->user->first_name . $this->user->last_name;
     }
 
     /**
