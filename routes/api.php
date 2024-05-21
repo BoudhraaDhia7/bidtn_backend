@@ -41,6 +41,7 @@ use App\Http\Controllers\Api\Categories\GetCategoriesController;
 use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
 use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
+use App\Http\Controllers\Api\Transactions\ListJetonTransactions;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,6 +114,11 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::Post('/confirm-auction/{id}' , ConfirmAuctionController::class)->name('confirm_auction');
     Route::Post('/reject-auction/{id}' , RejectAuctionController::class)->name('reject_auction');
 });
+
+Route::group(['prefix' => 'jeton-transactions',  'middleware' => 'user.auth'], function () {
+    Route::get('/', ListJetonTransactions::class)->name('get_all_jeton_transactions');
+});
+
 
 Route::group(['prefix' => 'categories'] , function(){
     Route::get('/',GetCategoriesController::class)->name('get_all_Categories');
