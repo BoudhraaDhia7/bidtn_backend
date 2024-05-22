@@ -1,7 +1,5 @@
 <?php
 
-use App\Events\JoinAuction;
-use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Api\Authentification\LogoutUserController;
@@ -35,8 +33,10 @@ use App\Http\Controllers\Api\Auction\ShowAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionCurrentStateController;
 use App\Http\Controllers\Api\Auction\UpdateAuctionController;
 use App\Http\Controllers\Api\Auction\ConfirmAuctionController;
+use App\Http\Controllers\Api\Auction\ListAuctionActivityController;
 use App\Http\Controllers\Api\Auction\RejectAuctionController;
-
+use App\Http\Controllers\Api\Auction\BidOnAuctionController;
+use App\Http\Controllers\Api\Auction\ShowAuctionActivityController;
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
 use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
@@ -102,6 +102,8 @@ Route::group(['prefix' => 'products', 'middleware' => ['user.auth']], function (
 });   
 
 Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () {
+    Route::get('/activity', ListAuctionActivityController::class)->name('get_all_auctions_activity');
+    Route::get('/show-activity/{id}', ShowAuctionActivityController::class)->name('show_all_auctions_activity');
     Route::get('/', ListAuctionsController::class)->name('get_all_auctions');
     Route::get('/{id}', ShowAuctionController::class)->name('get_auction');
     Route::post('/create', CreateAuctionController::class)->name('create_auction');
@@ -114,6 +116,7 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::Post('/confirm-auction/{id}' , ConfirmAuctionController::class)->name('confirm_auction');
     Route::Post('/reject-auction/{id}' , RejectAuctionController::class)->name('reject_auction');
 });
+
 
 Route::group(['prefix' => 'jeton-transactions',  'middleware' => 'user.auth'], function () {
     Route::get('/', ListJetonTransactions::class)->name('get_all_jeton_transactions');
