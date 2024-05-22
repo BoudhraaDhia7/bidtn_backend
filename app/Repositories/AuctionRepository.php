@@ -359,4 +359,29 @@ class AuctionRepository
         $auction->is_confirmed = true;
         $auction->save();
     }
+
+    /**
+     * Get all auctions activity for auth from the database.
+     *
+     * @param QueryConfig $queryConfig
+     * @return LengthAwarePaginator|Collection
+     */
+    public static function auctionActivity(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
+    {
+        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])
+            ->whereHas('participants', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+    
+        Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
+    
+        $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+    
+        if ($queryConfig->isPaginated()) {
+            return $auctionQuery->paginate($queryConfig->getPerPage());
+        }
+    
+        return $auctionQuery->get();
+    }
+    
 }

@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api\Auction;
 
 
-use App\Helpers\AuthHelper;
-use OpenApi\Attributes as OA;
 
+use OpenApi\Attributes as OA;
 
 use App\Models\Auction;
 use Illuminate\Http\Request;
@@ -66,8 +65,8 @@ class ShowAuctionController
     private function checkAuthrization($auction)
     {   
         $user = auth()->user();
-        // if ($user->cannot('showAuction', [$auction, $user])) {
-        //     abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
-        // }
+        if ($user->cannot('showAuction', [$auction, $user])) {
+            abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
+        }
     }
 }

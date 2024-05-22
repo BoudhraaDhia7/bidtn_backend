@@ -19,9 +19,9 @@ class Auction extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
+    protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'winner_id' , 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
 
-    protected $appends = ['added_by'];
+    protected $appends = ['added_by', 'winner_name'];
 
     public static function boot()
     {
@@ -108,5 +108,16 @@ class Auction extends Model
     public function getAddedByAttribute()
     {
         return $this->user ? $this->user->first_name . ' ' . $this->user->last_name : null;
+    }
+
+    public function getWinnerNameAttribute()
+    {   
+        $user = User::find($this->winner_id);
+        return $user ? $user->first_name . ' ' . $user->last_name : null;
+    }
+
+    public function isAuctionParticipant($user_id)
+    {
+        return $this->participants()->where('user_id', $user_id)->exists();
     }
 }
