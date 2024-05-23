@@ -12,6 +12,7 @@ use App\Models\Auction;
 use App\Helpers\QueryConfig;
 use App\Models\AuctionParticipant;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -368,20 +369,75 @@ class AuctionRepository
      */
     public static function auctionActivity(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])
-            ->whereHas('participants', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            });
-    
+        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])->whereHas('participants', function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        });
+
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
-    
+
         $auctionQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
-    
+
         if ($queryConfig->isPaginated()) {
             return $auctionQuery->paginate($queryConfig->getPerPage());
         }
-    
+
         return $auctionQuery->get();
     }
+
+    //get all product that use won
+    public static function wonProducts(User $user, QueryConfig $queryConfig): LengthAwarePaginator|Collection
+    {
+        $auctionsQuery = Auction::where('winner_id', $user->id)
+            ->with(['product', 'product.media']);
+
+        $auctionsQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
+
+        if ($queryConfig->isPaginated()) {
+            $auctions = $auctionsQuery->paginate($queryConfig->getPerPage());
+        } else {
+            $auctions = $auctionsQuery->get();
+        }
+
+        $wonProducts = $auctions->flatMap(function ($auction) {
+            return $auction->product->map(function ($product) use ($auction) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'description' => $product->description,
+                    'won_date' => $auction->finnished_at,
+                    'state' => 'delivered',
+                    'media' => $product->media->pluck('file_path')->toArray(),
+                    'auction_name' => $auction->title,
+                ];
+            });
+        });
+
+        if ($queryConfig->isPaginated()) {
+            return new LengthAwarePaginator(
+                $wonProducts->forPage($auctions->currentPage(), $auctions->perPage()),
+                $wonProducts->count(),
+                $auctions->perPage(),
+                $auctions->currentPage(),
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+        }
+
+        return $wonProducts;
+    }
     
+    //get all upcoming auctions that user has joined
+    public static function upcomingAuctions($user)
+    {
+        $auctions = Auction::where('start_date', '>', now()->timestamp)->get();
+        $upcomingAuctions = [];
+        foreach ($auctions as $auction) {
+            $participant = AuctionParticipant::where('auction_id', $auction->id)
+                ->where('user_id', $user->id)
+                ->first();
+            if ($participant) {
+                $upcomingAuctions[] = $auction;
+            }
+        }
+        return $upcomingAuctions;
+    }
 }
