@@ -37,6 +37,7 @@ use App\Http\Controllers\Api\Auction\ListAuctionActivityController;
 use App\Http\Controllers\Api\Auction\RejectAuctionController;
 use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionActivityController;
+use App\Http\Controllers\Api\Auction\WonAuctionProductsController;
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
 use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
@@ -101,21 +102,24 @@ Route::group(['prefix' => 'products', 'middleware' => ['user.auth']], function (
     Route::post('/{id}',UpdateProductController::class)->name('update_product');
 });   
 
+//Auction routes
 Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () {
+    Route::get('/', ListAuctionsController::class)->name('get_all_auctions');
     Route::get('/activity', ListAuctionActivityController::class)->name('get_all_auctions_activity');
     Route::get('/show-activity/{id}', ShowAuctionActivityController::class)->name('show_all_auctions_activity');
-    Route::get('/', ListAuctionsController::class)->name('get_all_auctions');
+    Route::get('/won-products', WonAuctionProductsController::class)->name('won_product');
     Route::get('/{id}', ShowAuctionController::class)->name('get_auction');
     Route::post('/create', CreateAuctionController::class)->name('create_auction');
     Route::post('/update/{id}', UpdateAuctionController::class)->name('update_auction');
     Route::delete('/{id}', DeleteAuctionController::class)->name('delete_auction');
     Route::post('/join/{id}', JoinAuctionController::class)->name('join_auction');
     Route::post('/bid/{id}', BidOnAuctionController::class)->name('bid_auction');
-    Route::Post('/current-state/{id}', ShowAuctionCurrentStateController::class)->name('state_auction');
-    Route::Post('/finish-auction/{id}', EndAuctionController::class)->name('end_auction');
-    Route::Post('/confirm-auction/{id}' , ConfirmAuctionController::class)->name('confirm_auction');
-    Route::Post('/reject-auction/{id}' , RejectAuctionController::class)->name('reject_auction');
+    Route::post('/current-state/{id}', ShowAuctionCurrentStateController::class)->name('state_auction');
+    Route::post('/finish-auction/{id}', EndAuctionController::class)->name('end_auction');
+    Route::post('/confirm-auction/{id}', ConfirmAuctionController::class)->name('confirm_auction');
+    Route::post('/reject-auction/{id}', RejectAuctionController::class)->name('reject_auction');
 });
+
 
 
 Route::group(['prefix' => 'jeton-transactions',  'middleware' => 'user.auth'], function () {
