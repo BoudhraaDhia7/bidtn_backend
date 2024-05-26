@@ -8,13 +8,14 @@ use App\Models\User;
 use App\Models\JetonPack;
 use Illuminate\Support\Str;
 use App\Models\JetonTransaction;
+use Illuminate\Support\Facades\DB;
 use App\Models\PasswordResetToken;
 use App\Exceptions\GlobalException;
+use App\Helpers\MediaHelpers;
 use App\Mail\UserResetPasswordMail;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-
 class UserRepository
 {
     /**
@@ -40,7 +41,7 @@ class UserRepository
      * @return User
      */
     public function updateUserDetail($validated, $user = null)
-    {
+    {   
         if (empty($user)) {
             throw new GlobalException('No authenticated user found.');
         }
@@ -59,8 +60,12 @@ class UserRepository
         $user->save();
 
         if (!empty($validated['profile_picture'])) {
-            $image_url = $this->updateUserProfilePicture($user, $validated['profile_picture']);
-            $user['profile_picture'] = $image_url;
+            $imageToDeatch = $user->media->pluck('id')->toArray();
+            if( count($imageToDeatch) > 0)
+                MediaRepository::detachMediaFromModel($user, $user->id, $imageToDeatch);
+           
+            $mediaData = MediaHelpers::storeMedia($validated['profile_picture'], 'profile_pictures', $user);
+            MediaRepository::attachMediaToModel($user, $mediaData);
         }
 
         return [
@@ -78,7 +83,7 @@ class UserRepository
      * @return string
      */
     protected function updateUserProfilePicture($user, $profilePicture)
-    {   
+    {
         $storedPath = $profilePicture->store('profile_pictures', 'public');
         $fullUrl = Storage::url($storedPath);
 
@@ -167,7 +172,7 @@ class UserRepository
      */
 
     public static function buyJetonPack($packId, $user = null)
-    {   
+    {
         if (!$user) {
             throw new GlobalException('No authenticated user found');
         }
@@ -191,35 +196,23 @@ class UserRepository
         ];
     }
 
-    //TODO: refactor this method to use the AdminRepository
-    /**
-     * Delete a user.
-     *
-     * @param int $id
-     * @return void
-     */
-    /* public static function deleteUserById(int $id): void
+    public static function ExchangeJeton($amount, $user)
     {
-        try {
-            if (!$id) {
-                throw new NotFoundUserException();
-            }
-            $user = User::find($id);
-            if (!$user) {
-                throw new NotFoundUserException();
-            }
-            $user->deleted_at = time();
-            $user->save();
-            MediaRepository::detachMediaFromModel($user);
-        } catch (NotFoundUserException) {
-            Log::error('DeleteUser: User not found');
-            throw new NotFoundUserException();
-        } catch (DetachMediaException) {
-            Log::error('DeleteUser: Error detaching media from user');
-            throw new DetachMediaException();
-        } catch (\Exception $e) {
-            Log::error('DeleteUser: Error deleting user' . $e->getMessage());
-            throw new GlobalException();
-        }
-    }*/
+        DB::beginTransaction();
+        $user->balance -= $amount;
+        $user->save();
+
+        $transaction = new JetonTransaction();
+        $transaction->user_id = $user->id;
+        $transaction->jeton_pack_id = null;
+        $transaction->amount = $amount;
+        $transaction->transaction_type = 'debit';
+        $transaction->save();
+
+        DB::commit();
+
+        return [
+            'user' => $user,
+        ];
+    }
 }
