@@ -44,7 +44,7 @@ class AuctionPolicy
 
     public function joinAuction(User $user, Auction $auction)
     {
-        return $user->balance > $auction->starting_price && $auction->is_finished === 0 && $auction->is_confirmed === 1 && $auction->is_started === 0;
+        return $user->balance > $auction->starting_price && $auction->is_finished === 0 && $auction->is_confirmed === 1 && $auction->is_started === 0 && $auction->user_id != $user->id;
     }
 
     //check if the is a participant in the auction

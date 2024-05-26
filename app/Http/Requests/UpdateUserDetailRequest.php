@@ -25,7 +25,7 @@ class UpdateUserDetailRequest extends FormRequest
             'first_name' => 'string',
             'last_name' => 'string',
             'password' => 'string|min:8',
-            'profile_picture' => 'file|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+            'profile_picture' => 'file|image|mimes:jpeg,png,jpg,gif,svg|max:2048|nullable'
         ];
     }
 }

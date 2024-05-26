@@ -6,6 +6,7 @@ use App\Events\BidPlaced;
 use App\Events\FinishAuction;
 use App\Events\JoinAuction;
 use App\Events\StartAuction;
+use App\Events\UserJoinedAuction;
 use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
 use App\Models\Auction;
@@ -53,7 +54,7 @@ class AuctionRepository
      */
     public static function guestIndex(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories']);
+        $auctionQuery = Auction::with(['product.media', 'product.categories'])->where('start_date', '>', time())->where('is_confirmed', true);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
@@ -214,6 +215,7 @@ class AuctionRepository
         $user->balance -= $auction->starting_price;
         $user->save();
         DB::commit();
+        broadcast(new UserJoinedAuction($user, $auction));
     }
 
     /**
@@ -281,13 +283,6 @@ class AuctionRepository
                 Log::info("Auction {$auction->id} could not start because it requires {$auction->starting_user_number} participants but only {$participantsCount} have joined.");
             }
         }
-    }
-
-    /**
-     *
-     */
-    public static function endAuctions()
-    {
     }
 
     public static function bidOnAuction($auction, $bidAmount, $user)
@@ -369,7 +364,7 @@ class AuctionRepository
      */
     public static function auctionActivity(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])->whereHas('participants', function ($query) use ($user) {
+        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])->where('is_finished',true)->whereHas('participants', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         });
 
@@ -439,5 +434,35 @@ class AuctionRepository
             }
         }
         return $upcomingAuctions;
+    }
+
+      /**
+     * Get all upcoming auctions joined by the user.
+     *
+     * @param User $user
+     * @return array
+     */
+    public static function upcomingJoinedAuctions(User $user): array
+    {
+        $currentTime = time();
+
+        $upcomingAuctions = $user->auctionParticipations()
+            ->with('auction')
+            ->whereHas('auction', function ($query) use ($currentTime) {
+                $query->where('start_date', '>', $currentTime);
+            })
+            ->get();
+
+        $auctionsData = [];
+        foreach ($upcomingAuctions as $auctionParticipation) {
+            $auction = $auctionParticipation->auction;
+            $auctionsData[] = [
+                'title' => $auction->title,
+                'start' => $auction->start_date,
+                'description' => $auction->description,
+            ];
+        }
+
+        return $auctionsData;
     }
 }
