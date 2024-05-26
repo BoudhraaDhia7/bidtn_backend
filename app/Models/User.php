@@ -60,6 +60,9 @@ class User extends Authenticatable implements JWTSubject
         'password' => 'hashed',
     ];
 
+    //append media as photo attribute
+    protected $appends = ['photo'];
+
     /**
      * The "booting" method of the model.
      *
@@ -144,9 +147,20 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(AuctionParticipant::class, 'user_id');
     }
 
+    /**
+     * Get the user transactions.
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'user_id');
+    }
+
+    /**
+     * return the user photo
+     */
+    public function getPhotoAttribute()
+    {
+        return $this->media()->first() ? $this->media()->first()->file_path : null;
     }
 
     /**

@@ -15,7 +15,7 @@ class JetonTransactionsReposiory
      * @param QueryConfig $queryConfig
      * @return LengthAwarePaginator|Collection
      */
-    public static function index(QueryConfig $queryConfig): LengthAwarePaginator|Collection
+    public static function index(QueryConfig $queryConfig , $user): LengthAwarePaginator|Collection
     {
         $TransactionsQuery = JetonTransaction::with('user');
 
@@ -26,7 +26,9 @@ class JetonTransactionsReposiory
         if ($queryConfig->isPaginated()) {
             return $TransactionsQuery->paginate($queryConfig->getPerPage());
         }
-
-        return $TransactionsQuery->get();
+        if ($user->isAdmin()) {
+            return $TransactionsQuery->get();
+        }
+        return $TransactionsQuery->where('user_id',$user->id)->get();
     }
 }

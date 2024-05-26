@@ -24,4 +24,9 @@ class JetonTransactionPolicy
     {
         return $user->isAdmin();
     }
+
+    public function exchangeJeton(?User $user , int $amount)
+    {   
+        return $user->balance >= $amount && $amount >= 100;
+    }
 }
