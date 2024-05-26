@@ -21,10 +21,10 @@ class ListJetonTransactions extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {   
-        $this->checkAuthrization();
         try {
+            $user = auth()->user();
             $params = $this->getAttributes($request);
-            $transactions = JetonTransactionsReposiory::index($params);
+            $transactions = JetonTransactionsReposiory::index($params , $user);
             return $this->GlobalResponse('jeton_pack_retrived', Response::HTTP_OK, $transactions, $params->getPaginated());
         } catch (\Exception $e) {
             Log::error('ListJetonPackController: Error listing jeton pack' . $e->getMessage());
@@ -55,15 +55,4 @@ class ListJetonTransactions extends Controller
         return $search;
     }
 
-    /**
-     * Check if the user is authorized to view the transactions
-     */
-    private function checkAuthrization()
-    {
-        $user = auth()->user();
-
-        if ($user->cannot('listTransaction', [JetonTransaction::class])) {
-            abort($this->GlobalResponse('failed_to_join', Response::HTTP_UNAUTHORIZED));
-        }
-    }
 }
