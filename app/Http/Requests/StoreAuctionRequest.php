@@ -34,7 +34,7 @@ class StoreAuctionRequest extends FormRequest
             'products.*.categories' => 'required|array',
             'products.*.categories.*' => 'required|numeric|exists:categories,id',
             'products.*.files' => 'required|array',
-            'products.*.files.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'products.*.files.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000',
         ];
     }
     

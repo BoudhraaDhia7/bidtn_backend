@@ -54,19 +54,8 @@ class ShowAuctionController
     public function __invoke($id): JsonResponse
     {
         $auction = Auction::with(['product.media', 'product.categories'])->findOrFail($id);
-        $this->checkAuthrization($auction);
         return $this->GlobalResponse('auction_retrieved', Response::HTTP_OK, [$auction]);
     }
   
 
-    /**
-     * Check if the user is authorized to view the auction
-     */
-    private function checkAuthrization($auction)
-    {   
-        $user = auth()->user();
-        if ($user->cannot('showAuction', [$auction, $user])) {
-            abort($this->GlobalResponse('fail_show', Response::HTTP_UNAUTHORIZED));
-        }
-    }
 }

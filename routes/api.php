@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\Api\Statistics\UserStatisticsController;
+
 use App\Http\Controllers\Api\Authentification\LogoutUserController;
 use App\Http\Controllers\Api\Authentification\RegisterUserController;
 use App\Http\Controllers\Api\Authentification\RefreshTokenController;
@@ -37,13 +39,15 @@ use App\Http\Controllers\Api\Auction\ListAuctionActivityController;
 use App\Http\Controllers\Api\Auction\RejectAuctionController;
 use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionActivityController;
+use App\Http\Controllers\Api\Auction\UpcomingJoinedAuctionsController;
 use App\Http\Controllers\Api\Auction\WonAuctionProductsController;
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
 use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
 use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
+use App\Http\Controllers\Api\Notifications\GetUserNotificationsController;
 use App\Http\Controllers\Api\Transactions\ListJetonTransactions;
-
+use App\Http\Controllers\Api\User\ChangeJetonController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -54,7 +58,6 @@ use App\Http\Controllers\Api\Transactions\ListJetonTransactions;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
 
 //User Auth routes group
 Route::group(['prefix' => 'auth'], function () {
@@ -67,7 +70,8 @@ Route::group(['prefix' => 'auth'], function () {
 Route::group(['prefix' => 'users', 'middleware' => 'user.auth'], function () {
     Route::get('/get-auth-user', GetUserController::class)->name('get_auth_user');
     Route::post('/buy-jeton-pack', BuyJetonPackController::class)->name('buy_jetons');
-    Route::put('/update-detail',UpdateDetailUserController::class)->name('update_user');
+    Route::post('/update-detail',UpdateDetailUserController::class)->name('update_user');
+    Route::post('/exchange-jetons', ChangeJetonController::class)->name('exchange_jetons');
     Route::delete('/{id}', DeleteUserController::class)->name('delete_user');
 
     /*Route::get('/', 'GetAllUsersController')->name('get_all_users');*/
@@ -108,6 +112,7 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::get('/activity', ListAuctionActivityController::class)->name('get_all_auctions_activity');
     Route::get('/show-activity/{id}', ShowAuctionActivityController::class)->name('show_all_auctions_activity');
     Route::get('/won-products', WonAuctionProductsController::class)->name('won_product');
+    Route::get('/upcoming-joined', UpcomingJoinedAuctionsController::class)->name('upcoming_joined_auctions');
     Route::get('/{id}', ShowAuctionController::class)->name('get_auction');
     Route::post('/create', CreateAuctionController::class)->name('create_auction');
     Route::post('/update/{id}', UpdateAuctionController::class)->name('update_auction');
@@ -120,7 +125,15 @@ Route::group(['prefix' => 'auction',  'middleware' => 'user.auth'], function () 
     Route::post('/reject-auction/{id}', RejectAuctionController::class)->name('reject_auction');
 });
 
+//Notification routes
+Route::group(['prefix' => 'notifications', 'middleware' => 'user.auth'], function () {
+    Route::get('/', GetUserNotificationsController::class)->name('get_all_notifications');
+});
 
+//Statistics routes
+Route::group(['prefix' => 'statistics', 'middleware' => 'user.auth'], function () {
+    Route::get('/user-statistics', UserStatisticsController::class)->name('get_all_user_statistics');
+});
 
 Route::group(['prefix' => 'jeton-transactions',  'middleware' => 'user.auth'], function () {
     Route::get('/', ListJetonTransactions::class)->name('get_all_jeton_transactions');
@@ -134,3 +147,4 @@ Route::group(['prefix' => 'categories'] , function(){
 Route::group(['prefix' => 'guest'], function () {
     Route::get('/auction', ListGuestAuctionController::class)->name('get_guest_all_auctions');
 });
+
