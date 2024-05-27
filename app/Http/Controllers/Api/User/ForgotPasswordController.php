@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Repositories\UserRepository;
 use App\Http\Requests\ForgotPasswordRequest;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ForgotPasswordController extends Controller
@@ -46,6 +47,7 @@ class ForgotPasswordController extends Controller
     )]
     public function __invoke(ForgotPasswordRequest $request) : JsonResponse
     {
+
         try {
             $validated = $this->getAttributes($request);
             $response = UserRepository::forgotPassword($validated);

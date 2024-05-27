@@ -77,4 +77,7 @@ return [
 
     //Media 
     'failed_to_save_media' => 'Failed to save media',
+    'reset_password_subject' => 'Reset your password',
+    'set_password_subject' => 'Set Your Password',
+    
 ];
