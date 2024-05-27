@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Auction;
 use App\Models\User;
+use App\Repositories\NotificationRepository;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -26,7 +27,15 @@ class AuctionFinished implements ShouldBroadcast
     }
 
     public function broadcastOn()
-    {
+    {   
+        //save the notification in the database
+        NotificationRepository::saveNotification([
+            'user_id' => $this->auction->user_id,
+            'title' => 'Your auction has finished',
+            'description' => $this->user->first_name . ' ' . $this->user->lastName . 'Auction' . $this->auction->title .'has finished',
+            'icon' => $this->user->getPhotoAttribute(),
+            'type' => 'auction_finished',
+        ]);
         return new PrivateChannel('notifications.'.$this->auction->user_id);
     }
 

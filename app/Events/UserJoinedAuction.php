@@ -4,12 +4,12 @@ namespace App\Events;
 
 use App\Models\Auction;
 use App\Models\User;
+use App\Repositories\NotificationRepository;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
 
 class UserJoinedAuction implements ShouldBroadcast
@@ -28,7 +28,14 @@ class UserJoinedAuction implements ShouldBroadcast
     public function broadcastOn()
     {   
 
-        Log::info("Broadcasting on channel: notifications.{$this->auction->user_id}");
+        NotificationRepository::saveNotification([
+            'user_id' => $this->auction->user_id,
+            'title' => 'New User Joined Auction',
+            'description' => $this->user->first_name . ' ' . $this->user->lastName . ' has joined ' . $this->auction->title ,
+            'icon' => $this->user->getPhotoAttribute(),
+            'type' => 'user_joined_auction',
+        ]);
+        
         return new PrivateChannel('notifications.'.$this->auction->user_id);
     }
 

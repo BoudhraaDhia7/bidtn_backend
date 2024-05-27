@@ -10,8 +10,15 @@ class Notification extends Model
     use HasFactory;
 
     protected $fillable = ['user_id', 'type', 'title', 'description', 'icon', 'read_at'];
-
+    
     protected $dateFormat = 'U';
+
+    protected $appends = ['read'];
+
+    public function getReadAttribute()
+    {
+        return true;    
+    }
 
     public function user()
     {
