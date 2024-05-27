@@ -148,3 +148,6 @@ Route::group(['prefix' => 'guest'], function () {
     Route::get('/auction', ListGuestAuctionController::class)->name('get_guest_all_auctions');
 });
 
+Route::get('/test', function () {
+    broadcast(new App\Events\AuctionStarted(\App\Models\Auction::find(2), \App\Models\User::find(2)));
+});

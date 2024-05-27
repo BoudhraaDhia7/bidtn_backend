@@ -12,6 +12,6 @@ class NotificationRepository
 
     public static function getUserNotifications($user)
     {
-        return Notification::where('user_id', $user->id)->get();
+        return Notification::where('user_id', $user->id)->take(5)->get();
     }
 }

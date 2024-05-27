@@ -4,6 +4,7 @@ namespace App\Events;
 
 use App\Models\Auction;
 use App\Models\User;
+use App\Repositories\NotificationRepository;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -21,13 +22,21 @@ class AuctionFailedToStart implements ShouldBroadcast
     public $user;
 
     public function __construct(Auction $auction, User $user)
-    {
+    {   
         $this->auction = $auction;
         $this->user = $user;
     }
 
     public function broadcastOn()
-    {
+    {   
+        NotificationRepository::saveNotification([
+            'user_id' => $this->auction->user_id,
+            'title' => 'Your auction has failed to start',
+            'description' => 'Auction ' . $this->auction->title .' has failed to start',
+            'icon' => $this->user->getPhotoAttribute(),
+            'type' => 'auction_failed_to_start',
+        ]);
+        
         return new PrivateChannel('notifications.'.$this->auction->user_id);
     }
 
