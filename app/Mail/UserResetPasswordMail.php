@@ -24,7 +24,6 @@ class UserResetPasswordMail extends Mailable
         $this->email = $email;
     }
 
-
     /**
      * Get the message envelope.
      */
@@ -41,7 +40,7 @@ class UserResetPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.users.reset-password',
         );
     }
 
@@ -57,7 +56,8 @@ class UserResetPasswordMail extends Mailable
 
     public function build()
     {
-        $resetUrl = config('app.frontend_url') . '/reset-password?token=' . $this->token;
+        $resetUrl = config('app.front_url') . '/auth/reset-password?token=' . $this->token;
+
         return $this->subject(__('set_password_subject'))
             ->markdown('emails.users.reset-password')
             ->with([

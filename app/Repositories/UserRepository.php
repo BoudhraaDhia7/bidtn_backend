@@ -41,7 +41,7 @@ class UserRepository
      * @return User
      */
     public function updateUserDetail($validated, $user = null)
-    {   
+    {
         if (empty($user)) {
             throw new GlobalException('No authenticated user found.');
         }
@@ -61,9 +61,10 @@ class UserRepository
 
         if (!empty($validated['profile_picture'])) {
             $imageToDeatch = $user->media->pluck('id')->toArray();
-            if( count($imageToDeatch) > 0)
+            if (count($imageToDeatch) > 0) {
                 MediaRepository::detachMediaFromModel($user, $user->id, $imageToDeatch);
-           
+            }
+
             $mediaData = MediaHelpers::storeMedia($validated['profile_picture'], 'profile_pictures', $user);
             MediaRepository::attachMediaToModel($user, $mediaData);
         }
@@ -140,8 +141,8 @@ class UserRepository
      */
     public static function resetPassword($validated, $resetPasswordToken)
     {
-        $token = PasswordResetToken::where('token', $resetPasswordToken)->whereNull('deleted_at')->first();
-
+        $token = PasswordResetToken::where('token', $resetPasswordToken)->first();
+        
         $tokenExpirationTime = $token->created_at + 30 * 60;
         if (!$token || Carbon::now()->timestamp > $tokenExpirationTime) {
             throw new GlobalException('Invalid or expired token');
@@ -159,10 +160,10 @@ class UserRepository
         $token->deleted_at = time();
         $token->save();
 
-        return [
-            'success' => true,
-            'message' => 'Password reset successfully.',
-        ];
+       return AuthRepository::authenticate([
+            'email' => $user->email,
+            'password' => $validated['password'],
+        ]);
     }
 
     /*

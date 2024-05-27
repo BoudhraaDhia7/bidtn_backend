@@ -4,6 +4,7 @@ namespace App\Repositories;
 use Exception;
 use App\Models\User;
 use App\Exceptions\AuthException;
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -44,18 +45,20 @@ class AuthRepository
      */
     public static function register($email, $password, $first_name, $last_name, $optionalParams = [])
     {
-
+        DB::beginTransaction();
         $password = Hash::make($password);
         $user = User::create([
             'email' => $email,
             'password' => $password,
             'first_name' => $first_name,
             'last_name' => $last_name,
+            'role_id' => 2,
         ]);
-
+        
         if (!$user) {
             throw new Exception('User registration failed');
         }
+        
 
         $token = JWTAuth::fromUser($user);
 
@@ -92,7 +95,7 @@ class AuthRepository
 
             $response['user']['profile_picture'] = $fullUrl;
         }
-
+        DB::commit();
         return $response;
     }
 

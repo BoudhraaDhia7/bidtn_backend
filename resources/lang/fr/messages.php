@@ -74,4 +74,6 @@ return [
 
     //Media 
     'failed_to_save_media' => 'Échec de l\'enregistrement du média',
+    'reset_password_subject' => 'Réinitialisez votre mot de passe',
+    'set_password_subject' => 'Définissez votre mot de passe',
 ];

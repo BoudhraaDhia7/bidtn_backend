@@ -59,6 +59,11 @@ use App\Http\Controllers\Api\User\ChangeJetonController;
 |
 */
 
+
+// Reset password routes
+Route::post('/forgot-password', ForgotPasswordController::class)->name('forgot_password');
+Route::post('/reset-password/{resetPasswordToken}', ResetPasswordController::class)->name('reset_password');
+
 //User Auth routes group
 Route::group(['prefix' => 'auth'], function () {
     Route::post('/register', RegisterUserController::class)->name('register_user');
@@ -73,8 +78,6 @@ Route::group(['prefix' => 'users', 'middleware' => 'user.auth'], function () {
     Route::post('/update-detail',UpdateDetailUserController::class)->name('update_user');
     Route::post('/exchange-jetons', ChangeJetonController::class)->name('exchange_jetons');
     Route::delete('/{id}', DeleteUserController::class)->name('delete_user');
-
-    /*Route::get('/', 'GetAllUsersController')->name('get_all_users');*/
 });
 
 //Token refresh route protected by auth middleware
@@ -148,6 +151,3 @@ Route::group(['prefix' => 'guest'], function () {
     Route::get('/auction', ListGuestAuctionController::class)->name('get_guest_all_auctions');
 });
 
-Route::get('/test', function () {
-    broadcast(new App\Events\AuctionStarted(\App\Models\Auction::find(2), \App\Models\User::find(2)));
-});
