@@ -12,6 +12,7 @@ use App\Helpers\MediaHelpers;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
 use App\Models\AuctionParticipant;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -159,7 +160,15 @@ class AuctionRepository
      * @param $productData
      */
     private static function attachMediaAndCategories($product, $productData)
-    {
+    {   
+  
+        foreach ($productData['categories'] as $category) {
+            $parentCategory = Category::find($category)->parent_id;
+            if ($parentCategory && !in_array($parentCategory, $productData['categories'])) {
+                $productData['categories'][] = $parentCategory;
+            }
+        }
+
         foreach ($productData['files'] as $file) {
             $mediaData = MediaHelpers::storeMedia($file, 'product_images', $product);
             MediaRepository::attachMediaToModel($product, $mediaData);

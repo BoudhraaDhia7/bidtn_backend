@@ -42,6 +42,7 @@ use App\Http\Controllers\Api\Auction\ShowAuctionActivityController;
 use App\Http\Controllers\Api\Auction\UpcomingJoinedAuctionsController;
 use App\Http\Controllers\Api\Auction\WonAuctionProductsController;
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
+use App\Http\Controllers\Api\Categories\SubCategoriesController;
 use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
 use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
@@ -145,6 +146,8 @@ Route::group(['prefix' => 'jeton-transactions',  'middleware' => 'user.auth'], f
 
 Route::group(['prefix' => 'categories'] , function(){
     Route::get('/',GetCategoriesController::class)->name('get_all_Categories');
+    Route::get('/{parentId}/sub-categories', SubCategoriesController::class)->name('get_sub_categories');
+
 });
 
 Route::group(['prefix' => 'guest'], function () {
