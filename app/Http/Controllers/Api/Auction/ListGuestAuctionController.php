@@ -68,13 +68,19 @@ class ListGuestAuctionController
      * @return QueryConfig
      */
     private function getAttributes(Request $request): QueryConfig
-    {
+    {   
         $paginationParams = $this->getPaginationParams($request);
 
         $filters = [
-            'category' => $request->input('categories') ?? null,
+            'parentCategory' => $request->input('parentCategory') ?? null,
+            'childCategory' => $request->input('childCategory') ?? null,
             'keyword' => $request->input('keyword') ?? null,
+            'minPrice' => $request->input('minPrice') ?? null,
+            'maxPrice' => $request->input('maxPrice') ?? null,
+            'startingUserNumber' => $request->input('minUsers') ?? null,
+            'startDate' => $request->input('startDate') ?? null,
         ];
+
 
         $search = new QueryConfig();
         $search

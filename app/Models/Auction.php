@@ -10,16 +10,20 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// TODO: Refactor the model
+/**
+ * Auction Model
+ */
 class Auction extends Model
 {
-    use HasFactory;
-
-    use ApplyQueryScopes, PaginationParams;
+    use HasFactory, ApplyQueryScopes, PaginationParams;
 
     public $timestamps = false;
 
-    protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'winner_id' , 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
+    protected $fillable = [
+        'title', 'description', 'starting_price', 'is_finished',
+        'starting_user_number', 'winner_id', 'is_confirmed', 'user_id',
+        'start_date', 'end_date', 'created_at', 'updated_at'
+    ];
 
     protected $appends = ['added_by', 'winner_name'];
 
@@ -37,85 +41,180 @@ class Auction extends Model
         });
     }
 
-    public function Product(): HasMany
+    /**
+     * Relationship with Product
+     */
+    public function product(): HasMany
     {
         return $this->hasMany(Product::class, 'auction_id');
     }
 
+    /**
+     * Polymorphic relationship with Media
+     */
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'model');
     }
 
+    /**
+     * Scope to filter by keyword in title or description
+     */
     public function scopeFilterByKeyword($query, $keyword)
     {
         if ($keyword !== null) {
             $query->where(function ($subQuery) use ($keyword) {
                 $subQuery
-                    ->where('title', 'like', '%' . $keyword . '%')
-                    ->orWhere('description', 'like', '%' . $keyword . '%')
-                    ->orWhere('starting_price', 'like', '%' . $keyword . '%')
-                    ->orWhere('is_finished', 'like', '%' . $keyword . '%')
-                    ->orWhere('starting_user_number', 'like', '%' . $keyword . '%')
-                    ->orWhereHas('product.categories', function ($query) use ($keyword) {
-                        $query->where('name', 'like', '%' . $keyword . '%');
-                    });
-            });
-        }
-        return $query;
-    }
-
-    public function scopeFilterByCategory($query, $category)
-    {
-        if ($category !== null) {
-            $query->whereHas('product.categories', function ($query) use ($category) {
-                $query->whereIn('name', $category);
+                    ->where('auctions.title', 'like', '%' . $keyword . '%')
+                    ->orWhere('auctions.description', 'like', '%' . $keyword . '%');
             });
         }
         return $query;
     }
 
     /**
-     * Get the participants in the auction.
+     * Scope to filter by category
+     */
+    public function scopeFilterByCategory($query, $category)
+    {
+        if ($category !== null) {
+            $query->whereHas('product.categories', function ($query) use ($category) {
+                $query->whereIn('categories.name', $category);
+            });
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by parent category ID
+     */
+    public function scopeFilterByParentCategory($query, $parentCategoryId)
+    {
+        if ($parentCategoryId !== null) {
+            $query->whereHas('product.categories', function ($query) use ($parentCategoryId) {
+                $query->where('categories.id', $parentCategoryId);
+            });
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by child category ID
+     */
+    public function scopeFilterByChildCategory($query, $childCategoryId)
+    {
+        if ($childCategoryId !== null) {
+            $query->whereHas('product.categories', function ($query) use ($childCategoryId) {
+                $query->where('categories.id', $childCategoryId);
+            });
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by minimum price
+     */
+    public function scopeFilterByMinPrice($query, $minPrice)
+    {
+        if ($minPrice !== null) {
+            $query->where('auctions.starting_price', '>=', $minPrice);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by maximum price
+     */
+    public function scopeFilterByMaxPrice($query, $maxPrice)
+    {
+        if ($maxPrice !== null) {
+            $query->where('auctions.starting_price', '<=', $maxPrice);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by minium user number to start the auction
+     */
+    public function scopeFilterByStartingUserNumber($query, $startingUserNumber)
+    {
+        if ($startingUserNumber !== null) {
+            $query->where('auctions.starting_user_number', '>=', $startingUserNumber);
+        }
+        return $query;
+    }
+
+    /**
+     * Scope to filter by start date
+     */
+    public function scopeFilterByStartDate($query, $startDate)
+    {
+        if ($startDate !== null) {
+            $query->where('auctions.start_date', '>=', $startDate);
+        }
+        return $query;
+    }
+
+    /**
+     * Get the participants in the auction
      */
     public function participants(): HasMany
     {
         return $this->hasMany(AuctionParticipant::class, 'auction_id');
     }
 
+    /**
+     * Get the transactions related to the auction
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'auction_id');
     }
 
-    //function that return if a given user id is a participant in the auction
+    /**
+     * Check if a given user ID is a participant in the auction
+     */
     public function isParticipant($user_id)
     {
         return $this->participants()->where('user_id', $user_id)->exists();
     }
 
-    //check if the given bid ammount is the highest on a given auction
+    /**
+     * Check if the given bid amount is the highest for the auction
+     */
     public function isHighestBid($bidAmount)
     {
         return $this->transactions()->max('amount') < $bidAmount;
     }
 
+    /**
+     * Relationship with User
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Accessor to get the full name of the user who added the auction
+     */
     public function getAddedByAttribute()
     {
         return $this->user ? $this->user->first_name . ' ' . $this->user->last_name : null;
     }
 
+    /**
+     * Accessor to get the full name of the auction winner
+     */
     public function getWinnerNameAttribute()
     {   
         $user = User::find($this->winner_id);
         return $user ? $user->first_name . ' ' . $user->last_name : null;
     }
 
+    /**
+     * Check if a given user ID is a participant in the auction
+     */
     public function isAuctionParticipant($user_id)
     {
         return $this->participants()->where('user_id', $user_id)->exists();

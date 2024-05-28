@@ -10,42 +10,17 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
- * @property int $ProductID
- * @property int $AuctionID
- * @property string     $Status
- * @property bool $IsConfirmed
- * @property string $name
- * @property string $description
- * @property string $categories
- * @property int $user_id
+ * Product Model
  */
 class Product extends Model
 {
-    use ApplyQueryScopes;
+    use ApplyQueryScopes, PaginationParams, HasFactory;
 
-    use PaginationParams;
-
-    use HasFactory;
-
-    /**
-     * Disable timestamps
-     *
-     * @var Date
-     */
     public $timestamps = false;
 
-    /**
-     * The "booting" method of the model.
-     *
-     * @return void
-     */
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = ['name', 'description', 'tag_id', 'user_id', 'auction_id' ,'created_at', 'updated_at'];
+    protected $fillable = [
+        'name', 'description', 'tag_id', 'user_id', 'auction_id', 'created_at', 'updated_at'
+    ];
 
     public static function boot()
     {
@@ -65,57 +40,77 @@ class Product extends Model
         });
     }
 
+    /**
+     * Scope to filter by product name
+     */
     public function scopeFilterByName($query, $name = null)
-    {  
+    {
         if (!is_null($name)) {
-            return $query->where('name', 'LIKE', "%{$name}%");
+            return $query->where('products.name', 'LIKE', "%{$name}%");
         }
-
         return $query;
     }
 
+    /**
+     * Scope to filter by category
+     */
     public function scopeFilterByCategory($query, $category = null)
     {
         if (!is_null($category)) {
-            return $query->where('category', 'LIKE', "%{$category}%");
+            return $query->where('categories.name', 'LIKE', "%{$category}%");
         }
-
         return $query;
     }
 
+    /**
+     * Scope to filter by status
+     */
     public function scopeFilterByStatus($query, $status = null)
     {
         if (!is_null($status)) {
-            return $query->where('status', 'LIKE', "%{$status}%");
+            return $query->where('products.status', 'LIKE', "%{$status}%");
         }
-
         return $query;
     }
 
+    /**
+     * Scope to filter by confirmation status
+     */
     public function scopeFilterByIsConfirmed($query, $isConfirmed = null)
     {
         if (!is_null($isConfirmed)) {
-            return $query->where('is_confirmed', $isConfirmed);
+            return $query->where('products.is_confirmed', $isConfirmed);
         }
-
         return $query;
     }
-    
+
+    /**
+     * Polymorphic relationship with Media
+     */
     public function media(): MorphMany
     {
         return $this->morphMany(Media::class, 'model');
     }
 
+    /**
+     * Relationship with User
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * Relationship with Auction
+     */
     public function auction(): BelongsTo
     {
         return $this->belongsTo(Auction::class, 'auction_id');
     }
 
+    /**
+     * Relationship with Category through products_tags pivot table
+     */
     public function categories()
     {
         return $this->belongsToMany(Category::class, 'products_tags', 'product_id', 'category_id');

@@ -72,13 +72,14 @@ class GetCategoriesController extends Controller
     )]
     
     public function __invoke(): JsonResponse
-    {
+    {   
         try {
             $response = CategoryRepository::index();
             return $this->GlobalResponse('category_retrived', Response::HTTP_OK, $response);
         } catch (\Exception $e) {
-            Log::error('GetCategoriesController: Error registering user' . $e->getMessage());
-            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode($e->getCode()));
+            Log::error('CategoriesController: Error fetching categories ' . $e->getMessage());
+            return $this->GlobalResponse($e->getMessage(), ResponseHelper::resolveStatusCode(500));
         }
+     
     }
 }
