@@ -2,26 +2,24 @@
 
 namespace App\Mail;
 
-use Illuminate\Bus\Queueable;       
+use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class UserResetPasswordMail extends Mailable
+class CompletePaiment extends Mailable
 {
     use Queueable, SerializesModels;
+
+    public $user;
 
     /**
      * Create a new message instance.
      */
-    public $token;
-    public $email;
-
-    public function __construct($token, $email)
+    public function __construct($user)
     {
-        $this->token = $token;
-        $this->email = $email;
+        $this->user = $user;
     }
 
     /**
@@ -30,7 +28,7 @@ class UserResetPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: __('reset_password_subject'),
+            subject: __('messages.complete_paiment_subject'),
         );
     }
 
@@ -40,29 +38,31 @@ class UserResetPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.users.reset-password',
+            markdown: 'emails.payments.complete-payment',
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, Attachment>
+     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
      */
     public function attachments(): array
     {
         return [];
     }
 
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
     public function build()
     {
-        $resetUrl = config('app.front_url') . '/auth/reset-password?token=' . $this->token;
+        \Log::info('Sending email to ' . $this->user->email);
+        \Log::info('Using view: emails.payments.complete-payment');
 
-        return $this->subject(__('messages.set_password_subject'))
-            ->markdown('emails.users.reset-password')
-            ->with([
-                'resetUrl' => $resetUrl,
-                'email' => $this->email,
-            ]);
+        return $this->view('emails.payments.complete-payment')
+                    ->with('user', $this->user);
     }
 }

@@ -139,4 +139,5 @@ return [
 
     'Vacances' => 'Vacances',
     'Autres' => 'Autres',
+    'complete_paiment_subject' => 'Paiement effectué',
 ];

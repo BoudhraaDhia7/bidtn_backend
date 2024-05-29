@@ -12,10 +12,14 @@ use Illuminate\Support\Facades\DB;
 use App\Models\PasswordResetToken;
 use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
+use App\Mail\CompletePaiment;
 use App\Mail\UserResetPasswordMail;
+use App\Models\Media;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 class UserRepository
 {
     /**
@@ -30,7 +34,9 @@ class UserRepository
         if (!$user) {
             throw new Exception('user not found', 404);
         }
-        return $user;
+        return [
+            'user' => $user,
+        ];
     }
 
     /**
@@ -41,7 +47,8 @@ class UserRepository
      * @return User
      */
     public function updateUserDetail($validated, $user = null)
-    {
+    {   
+        DB::beginTransaction();
         if (empty($user)) {
             throw new GlobalException('No authenticated user found.');
         }
@@ -58,7 +65,7 @@ class UserRepository
         }
 
         $user->save();
-
+ 
         if (!empty($validated['profile_picture'])) {
             $imageToDeatch = $user->media->pluck('id')->toArray();
             if (count($imageToDeatch) > 0) {
@@ -69,6 +76,7 @@ class UserRepository
             MediaRepository::attachMediaToModel($user, $mediaData);
         }
 
+        DB::commit();
         return [
             'success' => true,
             'message' => 'User updated successfully.',
@@ -194,6 +202,9 @@ class UserRepository
 
         return [
             'user' => $user,
+            'transactionId' => $transaction->id,
+            'transaction' => $transaction,
+            'jetonPack' => $jetonPack,
         ];
     }
 
@@ -210,6 +221,21 @@ class UserRepository
         $transaction->transaction_type = 'debit';
         $transaction->save();
 
+        //remove 15% of the amount
+        $amount = $amount - ($amount * 0.15);
+
+        $pdf = PDF::loadView('pdf.receipt', ['user' => $user, 'pack' => null, 'transaction' => $transaction , 'amount' => $amount , 'transaction_type' => 'debit']);
+        $pdfPath = 'receipts/' . uniqid() . '.pdf';
+        Storage::disk('public')->put($pdfPath, $pdf->output());
+
+        Media::create([
+            'model_type' => JetonTransaction::class,
+            'model_id' => $transaction->id,
+            'file_name' => basename($pdfPath),
+            'file_path' =>  config('constants.MEDIA_PATH') .'/storage/'. $pdfPath,
+            'file_type' => 'application/pdf',
+        ]);
+        Mail::to($user->email)->send(new CompletePaiment($user));
         DB::commit();
 
         return [

@@ -47,6 +47,10 @@ use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
 use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
 use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
 use App\Http\Controllers\Api\Notifications\GetUserNotificationsController;
+use App\Http\Controllers\Api\Stripe\CreateCheckoutSessionController;
+use App\Http\Controllers\Api\Stripe\CreatePaymentIntentController;
+use App\Http\Controllers\Api\Stripe\HandlePaymentSuccessController;
+use App\Http\Controllers\Api\Stripe\WebhookController;
 use App\Http\Controllers\Api\Transactions\ListJetonTransactions;
 use App\Http\Controllers\Api\User\ChangeJetonController;
 /*
@@ -152,5 +156,12 @@ Route::group(['prefix' => 'categories'] , function(){
 
 Route::group(['prefix' => 'guest'], function () {
     Route::get('/auction', ListGuestAuctionController::class)->name('get_guest_all_auctions');
+});
+
+
+//Payment Route
+Route::group(['prefix' => 'payment'], function () {
+    Route::post('/webhook', WebhookController::class)->name('stripe_webhook');
+    Route::post('/create-checkout-session', CreateCheckoutSessionController::class);
 });
 

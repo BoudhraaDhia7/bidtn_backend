@@ -13,7 +13,7 @@ class Transaction extends Model
     
     protected $dateFormat = 'U';
     
-    protected $appends = ['bidder_name'];
+    protected $appends = ['bidder_name' ];
 
     public function getBidderNameAttribute()
     {
@@ -29,4 +29,6 @@ class Transaction extends Model
     {
         return $this->belongsTo(Auction::class);
     }
+
+  
 }

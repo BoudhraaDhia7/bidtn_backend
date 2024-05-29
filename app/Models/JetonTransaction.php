@@ -17,7 +17,7 @@ class JetonTransaction extends Model
 
     public $timestamps = false;
     
-    protected $appends = ['user_code'];
+    protected $appends = ['user_code' , 'media'];
 
     public static function boot()
     {
@@ -39,5 +39,15 @@ class JetonTransaction extends Model
     public function user() : BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function media()
+    {
+        return $this->morphMany(Media::class, 'model');
+    }
+
+    public function getMediaAttribute()
+    {
+        return $this->media()->first() ? $this->media()->first()->file_path : null;
     }
 }
