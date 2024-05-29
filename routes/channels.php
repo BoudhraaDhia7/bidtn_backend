@@ -22,6 +22,10 @@ Broadcast::channel('notifications.{userId}', function ($user , $id) {
     return true;
 });
 
+Broadcast::channel('payment.{userId}', function () {
+    return true;
+});
+
 
 Broadcast::channel('current.{auctionId}', function ($auctionId) {
     return true;

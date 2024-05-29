@@ -15,8 +15,10 @@ class MediaHelpers
      */
     public static function storeMedia($image, $storePath, $instance)
     {
-        $storedPath = $image->store($storePath, 'public');
+ 
+        $storedPath = $image->store($storePath , 'public');
         $fullUrl = Storage::url($storedPath);
+        
         return [
             'file_name' => $instance->id . '_item_picture',
             'file_path' => config('constants.MEDIA_PATH') . $fullUrl,

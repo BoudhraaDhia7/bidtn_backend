@@ -24,5 +24,6 @@ class AppServiceProvider extends ServiceProvider
         Blueprint::macro('softDeletesBigInteger', function ($column = 'deleted_at', $precision = 0) {
             return $this->unsignedBigInteger($column, $precision)->nullable();
         });
+   
     }
 }
