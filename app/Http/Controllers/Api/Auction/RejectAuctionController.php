@@ -41,8 +41,8 @@ class RejectAuctionController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->cannot('rejectAction', [$auction])) {
-            abort($this->GlobalResponse('failed_to_join', Response::HTTP_UNAUTHORIZED));
+        if ($user->cannot('rejectAuction', [$auction])) {
+            abort($this->GlobalResponse('failed_to_reject', Response::HTTP_UNAUTHORIZED));
         }
     }
 }

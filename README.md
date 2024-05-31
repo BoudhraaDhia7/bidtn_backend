@@ -1,66 +1,122 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# BID-TN API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Requirements
 
-## About Laravel
+-   [PHP] 8.3.3 (php version: php -v)
+-   [composer] v2
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Installation
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 1 - Clone project
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```Shell
+git clone https://boudhraad-admin@bitbucket.org/anypli/bidtn-api.git
+```
 
-## Learning Laravel
+### 2 - Configuration
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+-   Duplicate .env.example and rename it to .env
+-   Generate app key
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```shell
+php artisan key:generate
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 2-1 Update .env file
 
-## Laravel Sponsors
+Ensure you update the `.env` file with the following keys and values:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+| Key                     | Description              | Value (example)                                       |
+| ----------------------- | ------------------------ | ----------------------------------------------------- |
+| `APP_NAME`              | Application name         | `BID-TN`                                              |
+| `APP_ENV`               | Application environment  | `local`                                               |
+| `APP_KEY`               | Application key          | `base64:las1Xi9tU8ZVq3EqGXEDk/lMcttVOiLyB/xDsOrASKg=` |
+| `APP_DEBUG`             | Application debug mode   | `true`                                                |
+| `APP_URL`               | Application URL          | `http://localhost:8000`                               |
+| `APP_PORT`              | Application port         | `8000`                                                |
+| `FRONT_URL`             | Frontend URL             | `http://localhost:5174`                               |
+| `LOG_CHANNEL`           | Log channel              | `stack`                                               |
+| `DB_CONNECTION`         | Database connection type | `mysql`                                               |
+| `DB_HOST`               | Database host            | `mysql`                                               |
+| `DB_PORT`               | Database port            | `3306`                                                |
+| `DB_DATABASE`           | Database name            | `bidtn`                                               |
+| `DB_USERNAME`           | Database username        | `sail`                                                |
+| `DB_PASSWORD`           | Database password        | `password`                                            |
+| `CACHE_DRIVER`          | Cache driver             | `redis`                                               |
+| `QUEUE_CONNECTION`      | Queue connection         | `sync`                                                |
+| `SESSION_DRIVER`        | Session driver           | `redis`                                               |
+| `REDIS_HOST`            | Redis host               | `redis`                                               |
+| `REDIS_PASSWORD`        | Redis password           | `null`                                                |
+| `REDIS_PORT`            | Redis port               | `6379`                                                |
+| `MAIL_MAILER`           | Mailer                   | `smtp`                                                |
+| `MAIL_HOST`             | Mail host                | `smtp.gmail.com`                                      |
+| `MAIL_PORT`             | Mail port                | `587`                                                 |
+| `MAIL_USERNAME`         | Mail username            | `YOUR_USER_NAME`                                      |
+| `MAIL_PASSWORD`         | Mail password            | `YOUR_API_KEY`                                        |
+| `MAIL_ENCRYPTION`       | Mail encryption          | `tls`                                                 |
+| `MAIL_FROM_ADDRESS`     | Mail from address        | `YOUR_USER_NAME`                                      |
+| `MAIL_FROM_NAME`        | Mail from name           | `${APP_NAME}`                                         |
+| `JWT_SECRET`            | JWT secret               | `YOUR_JWT_SECRET`                                     |
+| `JWT_TTL`               | JWT time-to-live         | `60`                                                  |
+| `REVERB_APP_ID`         | Reverb app ID            | `283142`                                              |
+| `REVERB_APP_KEY`        | Reverb app key           | `wncx0rshcupt5nl12xtj`                                |
+| `REVERB_APP_SECRET`     | Reverb app secret        | `nu5zjikikeqwsy20hp3k`                                |
+| `REVERB_HOST`           | Reverb host              | `localhost`                                           |
+| `REVERB_PORT`           | Reverb port              | `8080`                                                |
+| `REVERB_SCHEME`         | Reverb scheme            | `http`                                                |
+| `BROADCAST_DRIVER`      | Broadcast driver         | `reverb`                                              |
+| `VITE_REVERB_APP_KEY`   | Vite Reverb app key      | `${REVERB_APP_KEY}`                                   |
+| `VITE_REVERB_HOST`      | Vite Reverb host         | `${REVERB_HOST}`                                      |
+| `VITE_REVERB_PORT`      | Vite Reverb port         | `${REVERB_PORT}`                                      |
+| `VITE_REVERB_SCHEME`    | Vite Reverb scheme       | `${REVERB_SCHEME}`                                    |
+| `STRIPE_SECRET_KEY`     | Stripe secret key        | `YOUR_STRIPE_SECRET_KEY`                              |
+| `STRIPE_PUBLIC_KEY`     | Stripe public key        | `YOUR_STRIPE_PUBLIC_KEY`                              |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook secret    | `YOUR_STRIPE_WEBHOOK_SECRET_KEY`                      |
 
-### Premium Partners
+### 2-2 - Install project dependencies
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+```Shell
+composer install
+```
 
-## Contributing
+### 3 - Install sail dependencies
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```Shell
+php artisan sail:install
+```
 
-## Code of Conduct
+**When prompt choose mysql**
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4 - Start laravel sail
 
-## Security Vulnerabilities
+```Shell
+./vendor/bin/sail up
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Optional:** You can configure a shell alias for sail instead of repeatedly typing `vendor/bin/sail`
 
-## License
+```shell
+alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+To make sure this is always available, you may add this to your shell configuration file in your home directory, such
+as ~/.zshrc or ~/.bashrc, and then restart your shell.
+Now you can execute Sail commands by simply typing `sail`
+
+**Ex:**
+
+```shell
+sail up
+```
+
+### 5 - Run the migrations with seeders
+
+```Shell
+php artisan migrate --seed
+```
+
+### 6 - Setup crone jobs
+
+```Shell
+php artisan schedule:run
+```

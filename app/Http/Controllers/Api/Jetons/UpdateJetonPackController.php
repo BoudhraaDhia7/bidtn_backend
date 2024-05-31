@@ -30,9 +30,9 @@ class UpdateJetonPackController extends Controller
      */
     #[OA\Post(
         path: "/api/update-jeton-packs/:id",
-        tags: ["Jetons"],
+        tags: ["Jetons pack"],
         summary: "Create a new jeton pack",
-        operationId: "createJetonPack",
+        operationId: "updateJetonPack",
         requestBody: new OA\RequestBody(
             description: "Update jeton pack details",
             required: true,

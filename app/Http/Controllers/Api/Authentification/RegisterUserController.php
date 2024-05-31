@@ -30,7 +30,7 @@ class RegisterUserController extends Controller
 
      #[OA\Post(
         path: "/api/auth/register",
-        tags: ["Auth"],
+        tags: ["Authentification"],
         description: "Register a new user",
         requestBody: new OA\RequestBody(
             required: true,
