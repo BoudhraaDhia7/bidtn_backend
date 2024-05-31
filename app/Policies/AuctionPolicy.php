@@ -62,4 +62,14 @@ class AuctionPolicy
     {   
         return $user->isAdmin() && $auction->is_finished === 0 && $auction->is_confirmed === 0 && $auction->is_started === 0 && $auction->is_rejected === 0;
     }
+
+    public function showAuctionActivity(?User $user, Auction $auction)
+    {
+        return $auction->isParticipant($user->id);
+    }
+
+    public function showAuctionParticipants(?User $user, Auction $auction)
+    {
+        return $user->isAdmin();
+    }
 }

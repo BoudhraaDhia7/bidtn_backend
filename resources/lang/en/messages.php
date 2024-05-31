@@ -142,5 +142,15 @@ return [
     'Vacances' => 'Vacations',
     'Autres' => 'Others',
     'complete_paiment_subject' => 'Payment completed',
+    'new_joined_user_subject' => 'New user joined',
+    'failed_to_start_auction_subject' => 'Failed to start auction',
+    'balance_refunded_subject' => 'Balance refunded',
+    'new_auction_created_subject' => 'New auction opportunity',
+
+    //i want a message tat user can understand eaiher the auction is ended or not started
+    'fail_bid' => 'Failed to bid on the auction (Auction is either ended or not started)',
+    'failed_to_join' => 'Failed to join the auction',
+    'winner_mail_subject' => 'Congratulations! You won the auction',
+    'jeton_pack_created' => 'Jeton pack created successfully',
 
 ];

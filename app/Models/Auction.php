@@ -19,11 +19,7 @@ class Auction extends Model
 
     public $timestamps = false;
 
-    protected $fillable = [
-        'title', 'description', 'starting_price', 'is_finished',
-        'starting_user_number', 'winner_id', 'is_confirmed', 'user_id',
-        'start_date', 'end_date', 'created_at', 'updated_at'
-    ];
+    protected $fillable = ['title', 'description', 'starting_price', 'is_finished', 'starting_user_number', 'winner_id', 'is_confirmed', 'user_id', 'start_date', 'end_date', 'created_at', 'updated_at'];
 
     protected $appends = ['added_by', 'winner_name'];
 
@@ -64,9 +60,7 @@ class Auction extends Model
     {
         if ($keyword !== null) {
             $query->where(function ($subQuery) use ($keyword) {
-                $subQuery
-                    ->where('auctions.title', 'like', '%' . $keyword . '%')
-                    ->orWhere('auctions.description', 'like', '%' . $keyword . '%');
+                $subQuery->where('auctions.title', 'like', '%' . $keyword . '%')->orWhere('auctions.description', 'like', '%' . $keyword . '%');
             });
         }
         return $query;
@@ -179,12 +173,52 @@ class Auction extends Model
         return $this->participants()->where('user_id', $user_id)->exists();
     }
 
+    /*
+     * Get the number of participants in the auction
+     */
+    public function getParticipantsCount()
+    {
+        return $this->participants()->count();
+    }
+
     /**
      * Check if the given bid amount is the highest for the auction
      */
     public function isHighestBid($bidAmount)
     {
         return $this->transactions()->max('amount') < $bidAmount;
+    }
+
+    /*
+     * Get the highest bid amount in the auction
+     */
+    public function getHighestBid()
+    {
+        return $this->transactions()->max('amount');
+    }
+
+    /*
+     * Check if the auction is refundable
+     */
+    public function isRefundable()
+    {
+        return $this->transactions()->where('type', 'refund')->exists();
+    }
+
+    /**
+     * Retun the bid amount of a user id in the auction
+     */
+    public function getBidAmount($user_id)
+    {
+        return $this->transactions()->where('user_id', $user_id)->sum('amount');
+    }
+
+    /*
+      * Mark all transaction as refunded
+    */
+    public function markAllTransactionAsRefunded($user_id)
+    {
+        $this->transactions()->where('user_id', $user_id)->update(['type' => 'refund']);
     }
 
     /**
@@ -207,7 +241,7 @@ class Auction extends Model
      * Accessor to get the full name of the auction winner
      */
     public function getWinnerNameAttribute()
-    {   
+    {
         $user = User::find($this->winner_id);
         return $user ? $user->first_name . ' ' . $user->last_name : null;
     }

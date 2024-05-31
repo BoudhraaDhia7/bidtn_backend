@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Events\BalanceUpdate;
+use App\Events\BalanceUpdateNotification;
 use App\Events\BidPlaced;
 use App\Events\FinishAuction;
 use App\Events\JoinAuction;
@@ -11,14 +13,21 @@ use App\Exceptions\GlobalException;
 use App\Helpers\MediaHelpers;
 use App\Models\Auction;
 use App\Helpers\QueryConfig;
+use App\Jobs\SendAuctionCreatedEmail;
+use App\Mail\FailedToStartAuctionEmail;
+use App\Mail\RefundEmail;
+use App\Mail\UserJoinedMail;
+use App\Mail\WinnerMail;
 use App\Models\AuctionParticipant;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AuctionRepository
 {
@@ -55,7 +64,9 @@ class AuctionRepository
      */
     public static function guestIndex(QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories'])->where('start_date', '>', time())->where('is_confirmed', true);
+        $auctionQuery = Auction::with(['product.media', 'product.categories'])
+            ->where('start_date', '>', time())
+            ->where('is_confirmed', true);
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
@@ -125,11 +136,14 @@ class AuctionRepository
 
             self::processProducts($products, $user, $auction);
             DB::commit();
+
+            SendAuctionCreatedEmail::dispatch($auction);
             return $auction->toArray();
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
         }
+
     }
 
     /**
@@ -160,8 +174,7 @@ class AuctionRepository
      * @param $productData
      */
     private static function attachMediaAndCategories($product, $productData)
-    {   
-  
+    {
         foreach ($productData['categories'] as $category) {
             $parentCategory = Category::find($category)->parent_id;
             if ($parentCategory && !in_array($parentCategory, $productData['categories'])) {
@@ -224,6 +237,7 @@ class AuctionRepository
         $user->balance -= $auction->starting_price;
         $user->save();
         DB::commit();
+        Mail::to($auction->user->email)->send(new UserJoinedMail($auction, $auction->getParticipantsCount()));
         broadcast(new UserJoinedAuction($user, $auction));
     }
 
@@ -237,14 +251,14 @@ class AuctionRepository
         $currentTimestamp = now()->timestamp;
 
         // Get all auctions where start date has passed but not confirmed and not enough participants
-        $auctions = Auction::where('start_date', '<=', $currentTimestamp)->where('is_confirmed', true)->where('is_finished', false)->get();
+        $auctions = Auction::where('start_date', '<=', $currentTimestamp)->where('is_confirmed', true)->where('is_finished', false)->where('id', 2)->get();
 
         foreach ($auctions as $auction) {
             $participantsCount = AuctionParticipant::where('auction_id', $auction->id)
                 ->where('is_refunded', false)
                 ->count();
 
-            if ($participantsCount < $auction->starting_user_number) {
+            if ($participantsCount >= $auction->starting_user_number) {
                 $participants = AuctionParticipant::where('auction_id', $auction->id)
                     ->where('is_refunded', false)
                     ->get();
@@ -265,7 +279,11 @@ class AuctionRepository
                     });
                 }
             }
+
+            Mail::to($auction->user->email)->send(new FailedToStartAuctionEmail($auction));
         }
+
+        broadcast(new BalanceUpdate());
     }
 
     /**
@@ -308,6 +326,7 @@ class AuctionRepository
         $user->save();
 
         broadcast(new BidPlaced($auction->id, $user->id, (int) $bidAmount, $user->last_name, $user->balance));
+        broadcast(new BalanceUpdate());
         DB::commit();
     }
 
@@ -351,6 +370,8 @@ class AuctionRepository
         $auction->finnished_at = now()->timestamp;
         $auction->save();
         broadcast(new FinishAuction($auction->id, $highestBidder->id));
+        mail::to($highestBidder->email)->send(new WinnerMail($auction));
+
     }
 
     public static function rejectAuction($auction)
@@ -373,9 +394,11 @@ class AuctionRepository
      */
     public static function auctionActivity(QueryConfig $queryConfig, $user): LengthAwarePaginator|Collection
     {
-        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])->where('is_finished',true)->whereHas('participants', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        });
+        $auctionQuery = Auction::with(['product.media', 'product.categories', 'user'])
+            ->where('is_finished', true)
+            ->whereHas('participants', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
 
         Auction::applyFilters($queryConfig->getFilters(), $auctionQuery);
 
@@ -391,8 +414,7 @@ class AuctionRepository
     //get all product that use won
     public static function wonProducts(User $user, QueryConfig $queryConfig): LengthAwarePaginator|Collection
     {
-        $auctionsQuery = Auction::where('winner_id', $user->id)
-            ->with(['product', 'product.media']);
+        $auctionsQuery = Auction::where('winner_id', $user->id)->with(['product', 'product.media']);
 
         $auctionsQuery->orderBy($queryConfig->getOrderBy(), $queryConfig->getDirection());
 
@@ -417,18 +439,12 @@ class AuctionRepository
         });
 
         if ($queryConfig->isPaginated()) {
-            return new LengthAwarePaginator(
-                $wonProducts->forPage($auctions->currentPage(), $auctions->perPage()),
-                $wonProducts->count(),
-                $auctions->perPage(),
-                $auctions->currentPage(),
-                ['path' => request()->url(), 'query' => request()->query()]
-            );
+            return new LengthAwarePaginator($wonProducts->forPage($auctions->currentPage(), $auctions->perPage()), $wonProducts->count(), $auctions->perPage(), $auctions->currentPage(), ['path' => request()->url(), 'query' => request()->query()]);
         }
 
         return $wonProducts;
     }
-    
+
     //get all upcoming auctions that user has joined
     public static function upcomingAuctions($user)
     {
@@ -445,7 +461,7 @@ class AuctionRepository
         return $upcomingAuctions;
     }
 
-      /**
+    /**
      * Get all upcoming auctions joined by the user.
      *
      * @param User $user
@@ -455,7 +471,8 @@ class AuctionRepository
     {
         $currentTime = time();
 
-        $upcomingAuctions = $user->auctionParticipations()
+        $upcomingAuctions = $user
+            ->auctionParticipations()
             ->with('auction')
             ->whereHas('auction', function ($query) use ($currentTime) {
                 $query->where('start_date', '>', $currentTime);
@@ -473,5 +490,42 @@ class AuctionRepository
         }
 
         return $auctionsData;
+    }
+
+    public static function finalizeAuctions()
+    {
+        $auctions = Auction::where('is_finished', true)->get();
+        $usersId = [];
+        foreach ($auctions as $auction) {
+            DB::transaction(function () use ($auction, &$usersId) {
+                // Process participants
+                $participants = $auction->participants;
+                foreach ($participants as $participant) {
+                    if (!$participant->is_refunded && $auction->winner_id !== $participant->user_id) {
+                        // Refund non-winning participants
+                        $participant->user->balance += $auction->starting_price + $auction->getBidAmount($participant->user->id);
+                        $participant->user->save();
+
+                        $participant->is_refunded = true;
+                        $participant->save();
+
+                        $auction->markAllTransactionAsRefunded($participant->user_id);
+
+                        $usersId[] = $participant->user_id;
+                        Log::info("Refunded {$participant->paid_amount} to user {$participant->user_id} for auction {$participant->auction_id}");
+                    }
+                }
+            });
+        }
+        
+        broadcast(new BalanceUpdate());
+
+        foreach ($usersId as $id) {
+            $user = User::find($id);
+            broadcast(new BalanceUpdateNotification($user));
+            mail::to($user->email)->send(new RefundEmail());
+        }
+
+        DB::commit();
     }
 }

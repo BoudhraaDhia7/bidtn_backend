@@ -18,7 +18,7 @@ Broadcast::channel('auction.{auctionId}', function ($auctionId) {
     return true;
 });
 
-Broadcast::channel('notifications.{userId}', function ($user , $id) {
+Broadcast::channel('notifications.{userId}', function () {
     return true;
 });
 
@@ -26,10 +26,14 @@ Broadcast::channel('payment.{userId}', function () {
     return true;
 });
 
+Broadcast::channel('balance.update', function () {
+    return true;
+});
 
 Broadcast::channel('current.{auctionId}', function ($auctionId) {
     return true;
 });
+
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });

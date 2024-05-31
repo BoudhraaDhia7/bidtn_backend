@@ -13,7 +13,7 @@
                 ],
                 "summary": "List auctions",
                 "description": "Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.",
-                "operationId": "73e7f2fe709a89731ba169b17c668a21",
+                "operationId": "8ded5dd8533bb2779905a69626714da3",
                 "parameters": [
                     {
                         "name": "filters",
@@ -128,7 +128,356 @@
                 ],
                 "summary": "Create a new auction",
                 "description": "Creates a new auction with specified details. Requires user authentication and returns the created auction's data.",
-                "operationId": "b06f884274085950eb954beb00ee6856",
+                "operationId": "7e0834396abea29262a965f09e62e4b8",
+                "requestBody": {
+                    "description": "Auction details required to create a new auction",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "description",
+                                    "starting_price",
+                                    "start_date",
+                                    "end_date",
+                                    "starting_user_number"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Title of the auction",
+                                        "type": "string"
+                                    },
+                                    "description": {
+                                        "description": "Detailed description of the auction",
+                                        "type": "string"
+                                    },
+                                    "starting_price": {
+                                        "description": "Starting price of the auction",
+                                        "type": "number",
+                                        "format": "double"
+                                    },
+                                    "start_date": {
+                                        "description": "The start date and time of the auction",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "end_date": {
+                                        "description": "The end date and time of the auction",
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "starting_user_number": {
+                                        "description": "The minimum number of users required for the auction to start",
+                                        "type": "integer"
+                                    },
+                                    "is_confirmed": {
+                                        "description": "Status to confirm if the auction is officially active",
+                                        "type": "boolean",
+                                        "default": false
+                                    },
+                                    "is_finished": {
+                                        "description": "Status to indicate if the auction has finished",
+                                        "type": "boolean",
+                                        "default": false
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Auction created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "title": {
+                                            "description": "Title of the auction",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "title": "Vintage Camera Auction",
+                                        "description": "Auctioning a collection of vintage cameras from the 1950s.",
+                                        "starting_price": 100,
+                                        "start_date": "2023-01-01T12:00:00Z",
+                                        "end_date": "2023-01-05T12:00:00Z",
+                                        "starting_user_number": 5,
+                                        "is_confirmed": true,
+                                        "is_finished": false
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating the reason for the failure of auction creation",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "auction_creation_failed"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/guest/auctions": {
+            "get": {
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "List auctions",
+                "description": "Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.",
+                "operationId": "9ef874f48fcb884972733142e3320117",
+                "parameters": [
+                    {
+                        "name": "filters",
+                        "in": "query",
+                        "description": "JSON string of filter conditions for fetching auctions, such as status or date ranges.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Field to order the auctions by",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Direction of the sort order (asc or desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of auctions per page (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Auctions retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "An array of auctions",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "The unique identifier for the auction",
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "description": "Title of the auction",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the auction",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input, unable to process request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating what was wrong with the input",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Invalid parameters"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auction": {
+            "get": {
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "List auctions",
+                "description": "Retrieves a list of auctions based on filter, sort, and pagination parameters. Allows for extensive customization via query parameters.",
+                "operationId": "5b315ef56527842101398368a8c54b4e",
+                "parameters": [
+                    {
+                        "name": "filters",
+                        "in": "query",
+                        "description": "JSON string of filter conditions for fetching auctions, such as status or date ranges.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "order_by",
+                        "in": "query",
+                        "description": "Field to order the auctions by",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "direction",
+                        "in": "query",
+                        "description": "Direction of the sort order (asc or desc)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "asc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of auctions per page (required if pagination is enabled)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Auctions retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "description": "An array of auctions",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "description": "The unique identifier for the auction",
+                                                        "type": "integer"
+                                                    },
+                                                    "title": {
+                                                        "description": "Title of the auction",
+                                                        "type": "string"
+                                                    },
+                                                    "description": {
+                                                        "description": "Description of the auction",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input, unable to process request",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "description": "Error message indicating what was wrong with the input",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object",
+                                    "example": {
+                                        "error": "Invalid parameters"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auctions/{id}": {
+            "post": {
+                "tags": [
+                    "Auction"
+                ],
+                "summary": "Update a new auction",
+                "description": "Update a new auction with specified details. Requires user authentication and returns the created auction's data.",
+                "operationId": "4876ad9bc00a3f1d39185a26f2127bca",
                 "requestBody": {
                     "description": "Auction details required to create a new auction",
                     "required": true,
@@ -239,7 +588,7 @@
         "/api/auth/login": {
             "post": {
                 "tags": [
-                    "Auth"
+                    "Authentification"
                 ],
                 "summary": "Authenticate a user.\n\nThis endpoint is responsible for authenticating a user based on the provided email and password.\nIt performs validation on the request data and, if successful, returns an authentication token\nalong with user details. This process can result in various responses depending on the outcome\nof the authentication attempt.",
                 "description": "Authenticate a user",
@@ -361,7 +710,7 @@
         "/api/auth/logout": {
             "get": {
                 "tags": [
-                    "Auth"
+                    "Authentification"
                 ],
                 "summary": "Log out a user",
                 "description": "Logs out the current user by invalidating the authentication token. This endpoint requires an authenticated user with an active session.",
@@ -435,7 +784,7 @@
         "/api/token/refresh-token": {
             "post": {
                 "tags": [
-                    "Auth"
+                    "Authentification"
                 ],
                 "summary": "Refresh Authentication Token",
                 "description": "Refresh the authentication token.\n\nThis endpoint is used to log out the user. It requires no parameters but a valid\nbearer token must be provided in the Authorization header. On success, it returns\nan HTTP 200 OK response with a message indicating successful logout.",
@@ -500,7 +849,7 @@
         "/api/auth/register": {
             "post": {
                 "tags": [
-                    "Auth"
+                    "Authentification"
                 ],
                 "summary": "Register a new user.\n\nThis endpoint is responsible for registering a new user based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new user account and returns an\nauthentication token along with user details. This process can result in various responses depending on the\noutcome of the registration attempt.",
                 "description": "Register a new user",
@@ -681,16 +1030,105 @@
                 }
             }
         },
-        "/api/jeton-packs": {
+        "/api/jetons/create": {
             "post": {
                 "tags": [
-                    "Jetons"
+                    "Jetons pack"
                 ],
                 "summary": "Create a new jeton pack",
                 "description": "Create a new jeton pack.\n\nThis endpoint is responsible for creating a new jeton pack based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new jeton pack and returns a response\nindicating the success of the operation. This process can result in various responses depending on the outcome\nof the jeton pack creation attempt.",
                 "operationId": "createJetonPack",
                 "requestBody": {
                     "description": "Jeton pack details",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price",
+                                    "quantity"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "description": "The name of the jeton pack.",
+                                        "type": "string",
+                                        "example": "Jeton Pack X"
+                                    },
+                                    "price": {
+                                        "description": "The price of the jeton pack.",
+                                        "type": "number",
+                                        "example": 100
+                                    },
+                                    "amount": {
+                                        "description": "The amoun of jetons given by this pack.",
+                                        "type": "integer",
+                                        "example": 1000
+                                    },
+                                    "description": {
+                                        "description": "The description of the jeton pack.",
+                                        "type": "string",
+                                        "example": "This is a jeton pack description."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Jeton pack created successfully.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "description": "The ID of the created jeton pack.",
+                                            "type": "integer"
+                                        },
+                                        "name": {
+                                            "description": "The name of the jeton pack.",
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "description": "The amoun of jetons given by this pack.",
+                                            "type": "number"
+                                        },
+                                        "description": {
+                                            "description": "The description of the jeton pack.",
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity. Issues with jeton pack details."
+                    },
+                    "500": {
+                        "description": "Internal server error or other unspecified error."
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/update-jeton-packs/:id": {
+            "post": {
+                "tags": [
+                    "Jetons pack"
+                ],
+                "summary": "Create a new jeton pack",
+                "description": "Create a new jeton pack.\n\nThis endpoint is responsible for creating a new jeton pack based on the provided details in the request body.\nIt performs validation on the request data and, if successful, creates a new jeton pack and returns a response\nindicating the success of the operation. This process can result in various responses depending on the outcome\nof the jeton pack creation attempt.",
+                "operationId": "updateJetonPack",
+                "requestBody": {
+                    "description": "Update jeton pack details",
                     "required": true,
                     "content": {
                         "application/json": {
@@ -721,7 +1159,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Jeton pack created successfully.",
+                        "description": "Jeton pack updated successfully.",
                         "content": {
                             "application/json": {
                                 "schema": {
