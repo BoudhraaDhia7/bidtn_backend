@@ -26,7 +26,7 @@ class LogoutUserController extends Controller
 
      #[OA\Get(
         path: "/api/auth/logout",
-        tags: ["Auth"],
+        tags: ["Authentification"],
         summary: "Log out a user",
         description: "Logs out the current user by invalidating the authentication token. This endpoint requires an authenticated user with an active session.",
         security: [['bearerAuth' => []]],

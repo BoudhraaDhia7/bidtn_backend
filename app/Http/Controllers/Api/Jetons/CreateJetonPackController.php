@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 class CreateJetonPackController extends Controller
 {   
     use GlobalResponse;
+
     /**
      * Create a new jeton pack.
      *
@@ -28,10 +29,13 @@ class CreateJetonPackController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     #[OA\Post(
-        path: "/api/jeton-packs",
-        tags: ["Jetons"],
+        path: "/api/jetons/create",
+        tags: ["Jetons pack"],
         summary: "Create a new jeton pack",
         operationId: "createJetonPack",
+        security: [
+            ["bearerAuth" => []]
+        ],
         requestBody: new OA\RequestBody(
             description: "Jeton pack details",
             required: true,
@@ -39,9 +43,10 @@ class CreateJetonPackController extends Controller
                 mediaType: "application/json",
                 schema: new OA\Schema(
                     properties: [
-                        new OA\Property(property: "name", type: "string", description: "The name of the jeton pack."),
-                        new OA\Property(property: "price", type: "number", description: "The price of the jeton pack."),
-                        new OA\Property(property: "quantity", type: "integer", description: "The quantity of jetons in the pack."),
+                        new OA\Property(property: "name", type: "string", description: "The name of the jeton pack." , example: "Jeton Pack X"),
+                        new OA\Property(property: "price", type: "number", description: "The price of the jeton pack." , example: 100.00),
+                        new OA\Property(property: "amount", type: "integer", description: "The amoun of jetons given by this pack.", example: 1000),
+                        new OA\Property(property: "description", type: "string", description: "The description of the jeton pack." , example: "This is a jeton pack description."),
                     ],
                     required: ["name", "price", "quantity"]
                 )
@@ -53,10 +58,10 @@ class CreateJetonPackController extends Controller
                 description: "Jeton pack created successfully.",
                 content: new OA\JsonContent(
                     properties: [
-                        new OA\Property(property: "id", type: "integer", description: "The ID of the created jeton pack."),
+                        new OA\Property(property: "id", type: "integer", description: "The ID of the created jeton pack." ),
                         new OA\Property(property: "name", type: "string", description: "The name of the jeton pack."),
-                        new OA\Property(property: "price", type: "number", description: "The price of the jeton pack."),
-                        new OA\Property(property: "quantity", type: "integer", description: "The quantity of jetons in the pack."),
+                        new OA\Property(property: "amount", type: "number", description: "The amoun of jetons given by this pack."),
+                        new OA\Property(property: "description", type: "string", description: "The description of the jeton pack."),
                     ]
                 )
             ),
@@ -70,6 +75,7 @@ class CreateJetonPackController extends Controller
             )
         ]
     )]
+
     public function __invoke(CreateJetonPackRequest $request): JsonResponse
     {   
         $this->checkAuthrization();

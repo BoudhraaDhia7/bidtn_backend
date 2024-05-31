@@ -33,7 +33,7 @@ class AuthenticateUserController extends Controller
 
      #[OA\Post(
         path: "/api/auth/login",
-        tags: ["Auth"],
+        tags: ["Authentification"],
         description: "Authenticate a user",
         requestBody: new OA\RequestBody(
             required: true,
