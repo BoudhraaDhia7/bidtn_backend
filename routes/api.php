@@ -2,8 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\Api\Statistics\UserStatisticsController;
-
 use App\Http\Controllers\Api\Authentification\LogoutUserController;
 use App\Http\Controllers\Api\Authentification\RegisterUserController;
 use App\Http\Controllers\Api\Authentification\RefreshTokenController;
@@ -15,6 +13,7 @@ use App\Http\Controllers\Api\User\BuyJetonPackController;
 use App\Http\Controllers\Api\User\ResetPasswordController;
 use App\Http\Controllers\Api\User\ForgotPasswordController;
 use App\Http\Controllers\Api\User\UpdateDetailUserController;
+use App\Http\Controllers\Api\User\ChangeJetonController;
 
 use App\Http\Controllers\Api\Product\GetProductController;
 use App\Http\Controllers\Api\Product\GetProductsController;
@@ -24,6 +23,9 @@ use App\Http\Controllers\Api\Product\UpdateProductController;
 
 use App\Http\Controllers\Api\Jetons\ListJetonPackController;
 use App\Http\Controllers\Api\Jetons\CreateJetonPackController;
+use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
+use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
+use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
 
 use App\Http\Controllers\Api\Auction\CreateAuctionController;
 use App\Http\Controllers\Api\Auction\DeleteAuctionController;
@@ -41,18 +43,19 @@ use App\Http\Controllers\Api\Auction\BidOnAuctionController;
 use App\Http\Controllers\Api\Auction\ShowAuctionActivityController;
 use App\Http\Controllers\Api\Auction\UpcomingJoinedAuctionsController;
 use App\Http\Controllers\Api\Auction\WonAuctionProductsController;
+
+use App\Http\Controllers\Api\Stripe\CreateCheckoutSessionController;
+use App\Http\Controllers\Api\Stripe\WebhookController;
+
 use App\Http\Controllers\Api\Categories\GetCategoriesController;
 use App\Http\Controllers\Api\Categories\SubCategoriesController;
-use App\Http\Controllers\Api\Jetons\DeleteJetonPackController;
-use App\Http\Controllers\Api\Jetons\ShowJetonPackController;
-use App\Http\Controllers\Api\Jetons\UpdateJetonPackController;
-use App\Http\Controllers\Api\Notifications\GetUserNotificationsController;
-use App\Http\Controllers\Api\Stripe\CreateCheckoutSessionController;
-use App\Http\Controllers\Api\Stripe\CreatePaymentIntentController;
-use App\Http\Controllers\Api\Stripe\HandlePaymentSuccessController;
-use App\Http\Controllers\Api\Stripe\WebhookController;
+
 use App\Http\Controllers\Api\Transactions\ListJetonTransactions;
-use App\Http\Controllers\Api\User\ChangeJetonController;
+
+use App\Http\Controllers\Api\Notifications\GetUserNotificationsController;
+
+use App\Http\Controllers\Api\Statistics\UserStatisticsController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes

@@ -34,7 +34,7 @@ class UpdateAuctionRequest extends FormRequest
             'products.*.categories' => 'required|array',
             'products.*.categories.*' => 'required|numeric|exists:categories,id',
             'products.*.files' => 'array',
-            'products.*.files.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'products.*.files.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:10000',
             'products.*.deletedMedia' => 'array',
             'products.*.deletedMedia.*' => 'numeric|exists:medias,id',
         ];

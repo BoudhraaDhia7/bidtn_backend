@@ -38,7 +38,7 @@ class UsersTableSeeder extends Seeder
             [
                 'first_name' => 'user',
                 'last_name' => 'user2',
-                'email' => 'user2@test.com',
+                'email' => 'dhiaeddine.boudhraa@polytechnicien.tn',
                 'role_id' => 2, // 'User' role
                 'password' => Hash::make('password'),
                 'balance' => 9000,

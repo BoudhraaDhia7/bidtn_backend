@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class PaymentRepository
@@ -100,7 +101,7 @@ class PaymentRepository
             throw new \Exception('User not found');
         }
 
-        \Log::error('Payment failed for user ID: ' . $userId);
+        Log::error('Payment failed for user ID: ' . $userId);
 
         return $paymentIntent;
     }

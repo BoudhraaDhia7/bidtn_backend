@@ -140,4 +140,13 @@ return [
     'Vacances' => 'Vacances',
     'Autres' => 'Autres',
     'complete_paiment_subject' => 'Paiement effectué',
+    'new_joined_user_subject' => 'Nouvel utilisateur rejoint',
+    'failed_to_start_auction_subject' => 'Échec de démarrer l\'enchère',
+    'balance_refunded_subject' => 'Solde remboursé',
+    'new_auction_created_subject' => 'Nouvelle opportunité d\'enchère',
+       //i want a message tat user can understand eaiher the auction is ended or not started in french
+    'fail_bid' => 'Échec de miser sur l\'enchère (L\'enchère est soit terminée soit non démarrée)',
+    'failed_to_join' => 'Échec de rejoindre l\'enchère',
+    'winner_mail_subject' => 'Félicitations! Vous avez remporté l\'enchère',
+    'jeton_pack_created' => 'Pack jeton créé avec succès',
 ];
